@@ -16,14 +16,6 @@
 #include "xgeometry.h"
 
 ////////////////////////////////////////////////////////////////
-/// Forward declaration
-////////////////////////////////////////////////////////////////
-
-class Context;
-class SceneNode;
-class PrimitiveNode;
-
-////////////////////////////////////////////////////////////////
 /// Buffer
 ////////////////////////////////////////////////////////////////
 
@@ -365,6 +357,15 @@ public:
                 *std::dynamic_pointer_cast<T_Derived>(mPrototype)));
     }
 };
+
+////////////////////////////////////////////////////////////////
+/// Forward declaration
+////////////////////////////////////////////////////////////////
+
+class SceneNode;
+class LeafNode;
+class RootNode;
+class PrimitiveNode;
 
 ////////////////////////////////////////////////////////////////
 /// Interfaces
@@ -943,10 +944,6 @@ protected:
 /// Scene Node
 ////////////////////////////////////////////////////////////////
 
-class LeafNode;
-class RootNode;
-
-
 class LeafNode : public SceneNode
 {
 public:
@@ -1332,27 +1329,10 @@ protected:
 };
 
 ////////////////////////////////////////////////////////////////
-/// Context
+/// Context & Functions
 ////////////////////////////////////////////////////////////////
 
-class IRayGenerator
-{};
-
-
-class Context
-{
-public:
-
-protected:
-    //
-    std::shared_ptr<IPrototype<IShader>> mMiss;
-};
-
-////////////////////////////////////////////////////////////////
-/// Functions
-////////////////////////////////////////////////////////////////
-
-inline bool Trace(SceneNode* node, Ray& ray, IPayload& payload, int ray_type, bool shadow_ray)
+inline bool Trace(SceneNode* node, Ray& ray, IPayload& payload, int ray_type, bool shadow_ray, std::shared_ptr<IShader> miss)
 {
     IntersectInfo recv;
     IntersectArgs args{&recv, mat4{1.0f}};
@@ -1366,7 +1346,12 @@ inline bool Trace(SceneNode* node, Ray& ray, IPayload& payload, int ray_type, bo
     if (hit)
     {
         auto chs = recv.GetClosestHitProgram();
-        chs->operator()(payload, *recv.GetAttribute());
+        if (chs) chs->operator()(payload, *recv.GetAttribute());
+    }
+    else if (miss)
+    {
+        struct PlaceHolderAttribute : public IAttribute {} pha;
+        miss->operator()(payload, pha);
     }
 
     return hit;
