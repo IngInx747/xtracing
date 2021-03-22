@@ -1,9 +1,11 @@
 #pragma once
-#ifndef X_TRACING_H
-#define X_TRACING_H
+#ifndef XTRACING_H
+#define XTRACING_H
 
-#include "xmath.h"
-#include "xgeometry.h"
-#include "xutility.h"
+#include "xt_math.h"
+#include "xt_geometry.h"
+#include "xt_accel.h"
+#include "xt_node.h"
+#include "xt_texture.h"
 
-#endif // !X_TRACING_H
+#endif // !XTRACING_H

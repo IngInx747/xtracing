@@ -3,8 +3,8 @@
 ////////////////////////////////////////////////////////////////
 
 #pragma once
-#ifndef X_MATH_H
-#define X_MATH_H
+#ifndef XT_MATH_H
+#define XT_MATH_H
 
 #include <limits>
 #include <glm/glm.hpp>

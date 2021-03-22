@@ -10,19 +10,17 @@ int main(int argc, char** argv)
     {
         double dt;
 
-        if (argc < 2) throw
-            std::runtime_error("Missing path to a scene file as the first argument.");
-
         // Load the scene
         std::shared_ptr<Scene> scene = std::make_shared<Scene>();
         dt = When();
-        LoadScene(scene.get(), argv[1]);
+        LoadScene(scene.get());
         printf("Scene building time = %lf(s)\n", When() - dt);
 
         // pixel buffer
         std::vector<vec3> buffer(scene->width * scene->height);
 
         Renderer renderer;
+        renderer.SetNumFrame(1);
 
         dt = When();
         renderer.Render(buffer, scene.get());

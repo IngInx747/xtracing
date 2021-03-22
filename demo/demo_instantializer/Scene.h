@@ -16,17 +16,6 @@
 struct Payload : public IPayload
 {
     vec3 radiance;
-    vec3 mask;
-    vec3 origin;
-    vec3 direction;
-    int  depth;
-    bool done;
-};
-
-
-struct ShadowPayload : public IPayload
-{
-    int visible;
 };
 
 
@@ -41,7 +30,6 @@ struct Attribute : public IAttribute
 struct Triangle : public IPrimitive
 {
     vec3 p0, p1, p2;
-    int mid; // material id
 };
 
 
@@ -51,13 +39,12 @@ struct Scene
     unsigned int width, height;
 
     CameraFrame cameraFrame;
-    int depth = 1;
 
     std::shared_ptr<SceneNode> root;
     std::shared_ptr<IShader> miss;
 };
 
 
-bool LoadSceneMeshInstance(Scene* scene, const std::string& filename);
+bool LoadScene(Scene* scene, const std::string& filename);
 
 #endif

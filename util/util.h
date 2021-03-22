@@ -7,7 +7,7 @@
 #define UTIL_H
 
 #include <vector>
-#include "xmath.h"
+#include <xt_math.h>
 
 double When();
 uchar4 Vec2Rgba(const vec3& fcolor);

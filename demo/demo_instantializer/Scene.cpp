@@ -46,7 +46,7 @@ struct TriangleCollide : public ICollide
 };
 
 
-struct RayClosestHit : public IShader
+struct TrianglePhong : public IShader
 {
     void operator() (IPayload& payload_, const IAttribute& attrib_) const
     {
@@ -54,7 +54,6 @@ struct RayClosestHit : public IShader
         const Attribute& attrib = dynamic_cast<const Attribute&>(attrib_);
 
         payload.radiance += (attrib.normal + 1.f) * 0.5f;
-        --payload.depth;
     }
 
     Scene* scene;
@@ -66,8 +65,7 @@ struct Miss : public IShader
     void operator() (IPayload& payload_, const IAttribute& attrib_) const
     {
         Payload& payload = dynamic_cast<Payload&>(payload_);
-        payload.radiance += background;
-        payload.done = true;
+        payload.radiance = background;
     }
 
     vec3 background;
@@ -168,7 +166,7 @@ static void NormalizeMesh(std::vector<Triangle>& triangles)
 }
 
 
-bool LoadSceneMeshInstance(Scene* scene, const std::string& filename)
+bool LoadScene(Scene* scene, const std::string& filename)
 {
     // declaration
     int width = 600;
@@ -185,10 +183,10 @@ bool LoadSceneMeshInstance(Scene* scene, const std::string& filename)
     triangleGeometry->SetCollideProgram<TriangleCollide>(triangleCollide);
 
     // setup material programs
-    std::shared_ptr<RayClosestHit> rayClosestHit = std::make_shared<RayClosestHit>();
+    std::shared_ptr<TrianglePhong> rayClosestHit = std::make_shared<TrianglePhong>();
     rayClosestHit->scene = scene;
     std::shared_ptr<MaterialProgram> materialProgram = std::make_shared<MaterialProgram>();
-    materialProgram->SetClosestHitProgram<RayClosestHit>(0, rayClosestHit); // 0: common ray
+    materialProgram->SetClosestHitProgram<TrianglePhong>(0, rayClosestHit); // 0: common ray
 
     // setup context programs
     std::shared_ptr<Miss> miss = std::make_shared<Miss>();
@@ -200,6 +198,8 @@ bool LoadSceneMeshInstance(Scene* scene, const std::string& filename)
     if (!LoadMesh_Implm_TinyObj(filename, triangles))
         return false;
     NormalizeMesh(triangles);
+
+    // setup nodes
 
     // primitive node 0 (triangle)
     std::shared_ptr<PrimitiveNode> p0 = std::make_shared<PrimitiveNode>();
@@ -216,20 +216,22 @@ bool LoadSceneMeshInstance(Scene* scene, const std::string& filename)
     tm = rotate(tm, radians(45.0f), vec3{ 0, 1, 0 });
     t0->SetTransform(tm);
     t0->SetAccel(AccelEnum::NONE);
-    t0->AppendChild(p0);
 
     std::shared_ptr<TransformNode> t1 = std::make_shared<TransformNode>();
     tm = mat4{ 1.0f };
     //tm = scale(tm, vec3{ 2, 1, 1 });
     tm = rotate(tm, radians(-45.0f), vec3{ 0, 1, 0 });
     t1->SetTransform(tm);
-    t1->SetAccel(AccelEnum::NONE);
+    t1->SetAccel(AccelEnum::BVH);
 
     std::shared_ptr<InternalNode> g0 = std::make_shared<InternalNode>();
     g0->SetAccel(AccelEnum::BVH);
 
     std::shared_ptr<RootNode> root = std::make_shared<RootNode>();
     root->SetAccel(AccelEnum::BVH);
+
+    // assemble nodes
+    t0->AppendChild(p0);
 
     int n = 2;
     for (int i = -n; i <= n; ++i)
@@ -274,9 +276,8 @@ bool LoadSceneMeshInstance(Scene* scene, const std::string& filename)
         eye, lookat, up, fov, aspect,
         scene->cameraFrame.u, scene->cameraFrame.v, scene->cameraFrame.w, true);
 
-    // assemble all stuff
+    // store all stuff
     scene->root = root;
-    scene->depth = 1;
     scene->width = width;
     scene->height = height;
     scene->outputFilename.clear();
