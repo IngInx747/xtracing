@@ -541,7 +541,7 @@ public:
         {
             if (mChildren.size() >= 50) // !?
             {
-                mAccel = std::make_shared<SceneNodeAccelBvh>();
+                mAccel = std::make_shared<SceneNodeAccelBvh>(GetGlobalBvhOption());
             }
             else
             {
@@ -822,7 +822,7 @@ public:
         {
             if (mBuffer.size() >= 50) // !?
             {
-                mAccel = std::make_shared<PrimitiveAccelBvh>();
+                mAccel = std::make_shared<PrimitiveAccelBvh>(GetGlobalBvhOption());
             }
             else
             {
