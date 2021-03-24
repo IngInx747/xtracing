@@ -201,6 +201,8 @@ bool LoadScene(Scene* scene, const std::string& filename)
 
     // setup nodes
 
+    SetGlobalBvhBuildOptionSplitMethod(BvhSplitMethodEnum::EQUAL_COUNT);
+
     // primitive node 0 (triangle)
     std::shared_ptr<PrimitiveNode> p0 = std::make_shared<PrimitiveNode>();
     p0->SetGeometry(triangleGeometry);
@@ -217,6 +219,8 @@ bool LoadScene(Scene* scene, const std::string& filename)
     t0->SetTransform(tm);
     t0->SetAccel(AccelEnum::NONE);
 
+    SetGlobalBvhBuildOptionSplitMethod(BvhSplitMethodEnum::MIDDLE_POINT);
+
     std::shared_ptr<TransformNode> t1 = std::make_shared<TransformNode>();
     tm = mat4{ 1.0f };
     //tm = scale(tm, vec3{ 2, 1, 1 });
@@ -229,6 +233,8 @@ bool LoadScene(Scene* scene, const std::string& filename)
 
     std::shared_ptr<RootNode> root = std::make_shared<RootNode>();
     root->SetAccel(AccelEnum::BVH);
+
+    SetGlobalBvhBuildOptionSplitMethod(BvhSplitMethodEnum::EQUAL_COUNT);
 
     // assemble nodes
     t0->AppendChild(p0);

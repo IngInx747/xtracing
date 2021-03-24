@@ -213,6 +213,13 @@ protected:
 class PrimitiveAccelBvh : public IPrimitiveAccel
 {
 public:
+    PrimitiveAccelBvh()
+    {}
+
+    PrimitiveAccelBvh(const BvhBuildOption& option)
+    : mOption(option)
+    {}
+
     Aabb GetBoundingBox() const
     {
         return mBvh.GetBoundingBox();
@@ -235,14 +242,19 @@ public:
         std::vector<int> indices(buffer.size());
         std::iota(std::begin(indices), std::end(indices), 0); // fill with 0 ~ n-1
         PrimitiveIndexBound indexBound(buffer, bound);
-        EqualCountsSplit<int, decltype(indexBound)> split(indexBound);
-        mBvh.SetNumObjPerNode(1);
-        mBvh.Build<PrimitiveIndexBound, decltype(split)>(indices, indexBound, split);
+        BuildBvh<int, decltype(indexBound)>(mBvh, indices, indexBound, mOption);
+
+        //EqualCountsSplit<int, decltype(indexBound)> split(indexBound);
+        //mBvh.SetNumObjPerNode(1);
+        //mBvh.Build<PrimitiveIndexBound, decltype(split)>(indices, indexBound, split);
     }
 
 protected:
     // accelerating structure storing indices of primitives
     Bvh<int> mBvh;
+
+    // bvh build options
+    BvhBuildOption mOption;
 };
 
 ////////////////////////////////////////////////////////////////
@@ -418,6 +430,13 @@ protected:
 class SceneNodeAccelBvh : public ISceneNodeAccel
 {
 public:
+    SceneNodeAccelBvh()
+    {}
+
+    SceneNodeAccelBvh(const BvhBuildOption& option)
+    : mOption(option)
+    {}
+
     Aabb GetBoundingBox() const
     {
         return mBvh.GetBoundingBox();
@@ -435,14 +454,18 @@ public:
     void Build(const std::vector<std::shared_ptr<SceneNode>>& nodes)
     {
         SceneNodeBound bound;
-        EqualCountsSplit<std::shared_ptr<SceneNode>, decltype(bound)> split(bound);
-        mBvh.SetNumObjPerNode(1);
-        mBvh.Build<SceneNodeBound, decltype(split)>(nodes, bound, split);
+        BuildBvh<std::shared_ptr<SceneNode>, SceneNodeBound>(mBvh, nodes, bound, mOption);
+
+        //EqualCountsSplit<std::shared_ptr<SceneNode>, decltype(bound)> split(bound);
+        //mBvh.Build<SceneNodeBound, decltype(split)>(nodes, bound, split);
     }
     
 protected:
     // accelerating structure storing nodes
     Bvh<std::shared_ptr<SceneNode>> mBvh;
+
+    // bvh build options
+    BvhBuildOption mOption;
 };
 
 ////////////////////////////////////////////////////////////////
@@ -504,7 +527,7 @@ public:
     {
         if (type == AccelEnum::BVH)
         {
-            mAccel = std::make_shared<SceneNodeAccelBvh>();
+            mAccel = std::make_shared<SceneNodeAccelBvh>(GetGlobalBvhOption());
         }
         else
         {
@@ -785,7 +808,7 @@ public:
     {
         if (type == AccelEnum::BVH)
         {
-            mAccel = std::make_shared<PrimitiveAccelBvh>();
+            mAccel = std::make_shared<PrimitiveAccelBvh>(GetGlobalBvhOption());
         }
         else
         {
