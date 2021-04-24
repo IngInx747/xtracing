@@ -1,4 +1,4 @@
-  # cmake_minimum_require must be the first command of the file
+# cmake_minimum_require must be the first command of the file
 cmake_minimum_required(VERSION 3.5.0)
 
 # This is your project statement. You should always list languages;
@@ -81,3 +81,4 @@ add_subdirectory(demo/demo_instantializer)
 add_subdirectory(demo/demo_phong)
 add_subdirectory(demo/demo_texture)
 #add_subdirectory(demo/cse_168_hw1)
+add_subdirectory(demo/cse_168_hw2)
