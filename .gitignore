@@ -274,3 +274,6 @@ __pycache__/
 
 # Data set
 !data/*.obj
+
+# Output
+output.png
