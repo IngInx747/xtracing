@@ -62,9 +62,9 @@ struct TriangleCollide : public ICollide
             vec3 uvw = GetBarycentricCoordinates(v0, v1, v2, h);
             vec2 tc = tri.t0 * uvw.x + tri.t1 * uvw.y + tri.t2 * uvw.z;
 
-            h = Object2WorldHomoCoord(h, GetWorldTransform());
-            n = normalize(Object2WorldNonHomoCoord(n, GetWorldTransform()));
-            dir = normalize(Object2WorldNonHomoCoord(dir, GetWorldTransform()));
+            h = TransformPoint(h, GetWorldTransform());
+            n = normalize(TransformNormal(n, GetWorldTransform()));
+            dir = normalize(TransformVector(dir, GetWorldTransform()));
 
             Attribute attribute;
             attribute.hit = h;
@@ -123,9 +123,9 @@ struct SphereCollide : public ICollide
             vec3 sc = GetSphericalCoordinates(sphere.p, h); // rho, phi, psi
             vec2 tc = {sc.y / kPi, sc.z / (kPi * 2)};
 
-            h = Object2WorldHomoCoord(h, GetWorldTransform());
-            n = normalize(Object2WorldNonHomoCoord(n, GetWorldTransform()));
-            dir = normalize(Object2WorldNonHomoCoord(dir, GetWorldTransform()));
+            h = TransformPoint(h, GetWorldTransform());
+            n = normalize(TransformNormal(n, GetWorldTransform()));
+            dir = normalize(TransformVector(dir, GetWorldTransform()));
 
             Attribute attribute;
             attribute.hit = h;
@@ -451,7 +451,7 @@ bool LoadScene(Scene* scene)
     int width = 800;
     int height = 800;
     int depth = 5;
-    std::string outputName = "output.png";
+    std::string outputName = "demo_texture.png";
     std::vector<Triangle> triangles;
     std::vector<Sphere> spheres;
 

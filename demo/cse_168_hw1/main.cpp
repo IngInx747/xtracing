@@ -8,20 +8,28 @@ int main(int argc, char** argv)
 {
     try
     {
+        double dt;
+
         // Check for scene file 
-        if (argc == 1) throw
-            std::runtime_error("Missing path to a scene file as the first argument.");
+        if (argc <= 1) throw std::runtime_error("Need 1 argument");
 
-        // Load the scene file
+        std::shared_ptr<Scene> scene = std::make_shared<Scene>();
         SceneLoader loader;
-        std::shared_ptr<Scene> scene = loader.load(argv[1]);
-        Renderer renderer(scene);
+        Renderer renderer;
+        std::vector<vec3> buffer;
+        
+        // Load the scene
+        dt = When();
+        loader.Load(argv[1], scene.get());
+        printf("Scene building time = %lf(s)\n", When() - dt);
+        buffer.resize(scene->width * scene->height);
 
-        double dt = When();
-        renderer.run(false);
-        printf("Elapsed time = %lf(s)\n", When() - dt);
+        // Render the scene
+        dt = When();
+        renderer.Render(buffer, scene.get());
+        printf("Rendering time = %lf(s)\n", When() - dt);
 
-        SaveImagePNG(renderer.getResultBuffer(), renderer.getWidth(), renderer.getHeight(), renderer.getOutputFilename().c_str());
+        SaveImagePNG(buffer, scene->width, scene->height, scene->outputFilename.c_str());
     }
     catch (const std::exception & ex)
     {

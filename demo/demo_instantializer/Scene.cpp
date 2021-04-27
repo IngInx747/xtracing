@@ -29,11 +29,11 @@ struct TriangleCollide : public ICollide
         bool ret = IsIntersectingTriangle(v0, v1, v2, org, dir, ray.dist, ray.epsilon);
         if (ret && !IsShadowRay())
         {
-            vec3 h = Object2WorldHomoCoord(org + dir * ray.dist, GetWorldTransform());
+            vec3 h = TransformPoint(org + dir * ray.dist, GetWorldTransform());
             vec3 n = cross(v1 - v0, v0 - v2);
             if (dot(n, dir) > 0) n = -n;
-            n = normalize(Object2WorldNonHomoCoord(n, GetWorldTransform()));
-            dir = normalize(Object2WorldNonHomoCoord(dir, GetWorldTransform()));
+            n = normalize(TransformNormal(n, GetWorldTransform()));
+            dir = normalize(TransformVector(dir, GetWorldTransform()));
 
             Attribute attribute;
             attribute.hit = h;

@@ -45,9 +45,9 @@ struct TriangleCollide : public ICollide
             vec3 n = cross(v1 - v0, v0 - v2);
             if (dot(n, dir) > 0) n = -n;
 
-            h = Object2WorldHomoCoord(h, GetWorldTransform());
-            n = normalize(Object2WorldNonHomoCoord(n, GetWorldTransform()));
-            dir = normalize(Object2WorldNonHomoCoord(dir, GetWorldTransform()));
+            h = TransformPoint(h, GetWorldTransform());
+            n = normalize(TransformNormal(n, GetWorldTransform()));
+            dir = normalize(TransformVector(dir, GetWorldTransform()));
 
             Attribute attribute;
             attribute.hit = h;
@@ -76,9 +76,9 @@ struct SphereCollide : public ICollide
             vec3 h = org + dir * ray.dist;
             vec3 n = h - sphere.p;
 
-            h = Object2WorldHomoCoord(h, GetWorldTransform());
-            n = normalize(Object2WorldNonHomoCoord(n, GetWorldTransform()));
-            dir = normalize(Object2WorldNonHomoCoord(dir, GetWorldTransform()));
+            h = TransformPoint(h, GetWorldTransform());
+            n = normalize(TransformNormal(n, GetWorldTransform()));
+            dir = normalize(TransformVector(dir, GetWorldTransform()));
 
             Attribute attribute;
             attribute.hit = h;
@@ -333,7 +333,7 @@ bool LoadScene(Scene* scene)
     int width = 800;
     int height = 800;
     int depth = 3;
-    std::string outputName = "output.png";
+    std::string outputName = "demo_phong.png";
     std::vector<Triangle> triangles;
     std::vector<Sphere> spheres;
 

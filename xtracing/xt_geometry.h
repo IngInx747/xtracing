@@ -16,24 +16,25 @@
 /// Transform
 ////////////////////////////////////////////////////////////////
 
-inline vec3 Object2WorldHomoCoord(const vec3& p, const mat4& transform)
+//inline vec3 TransformPoint(const vec3& p, const mat4& transform)
+//{
+//    return vec3(transform * vec4(p, 1));
+//}
+
+inline vec3 TransformPoint(const vec3& p, const mat4& transform)
 {
-    return vec3(transform * vec4(p, 1));
+    vec4 v = transform * vec4(p, 1);
+    return v.w == 1.f ? vec3(v) : vec3(v) / v.w;
 }
 
-inline vec3 Object2WorldNonHomoCoord(const vec3& n, const mat4& transform)
+inline vec3 TransformVector(const vec3& v, const mat4& transform)
+{
+    return mat3(transform) * v;
+}
+
+inline vec3 TransformNormal(const vec3& n, const mat4& transform)
 {
     return vec3(transpose(inverse(transform)) * vec4(n, 0));
-}
-
-inline vec3 World2ObjectHomoCoord(const vec3& p, const mat4& transform)
-{
-    return vec3(inverse(transform) * vec4(p, 1));
-}
-
-inline vec3 World2ObjectNonHomoCoord(const vec3& n, const mat4& transform)
-{
-    return vec3(inverse(transform) * vec4(n, 0));
 }
 
 ////////////////////////////////////////////////////////////////

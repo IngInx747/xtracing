@@ -667,8 +667,8 @@ public:
     {
         bool hit = false;
 
-        vec3 org = World2ObjectHomoCoord(ray.org, mTransform);
-        vec3 dir = World2ObjectNonHomoCoord(ray.dir, mTransform);
+        vec3 org = TransformPoint(ray.org, mInverse);
+        vec3 dir = TransformVector(ray.dir, mInverse);
         Ray  new_ray{org, dir, ray.dist, ray.epsilon}; // apply transform to ray
         mat4 new_transform = args.transform * mTransform; // accumulate transform
         IntersectArgs new_args{args.GetInfo(), new_transform};
@@ -687,11 +687,13 @@ public:
     void SetTransform(const mat4& transform)
     {
         mTransform = transform;
+        mInverse = inverse(transform);
     }
 
 protected:
     // transform matrix
     mat4 mTransform;
+    mat4 mInverse;
 };
 
 

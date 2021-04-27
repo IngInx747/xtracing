@@ -12,109 +12,104 @@
 
 #include "xtracing.h"
 
-struct PointLight
-{
-    vec3 position;
-    vec3 color;
-    float c0, c1, c2;
-    // TODO: define the point light structure
-};
 
-struct DirectionalLight
+struct Payload : public IPayload
 {
+    vec3 radiance;
+    vec3 mask;
+    vec3 origin;
     vec3 direction;
-    vec3 color;
-    // TODO: define the directional light structure
+    int  depth;
+    bool done;
 };
 
-struct MyMaterial
+
+struct ShadowPayload : public IPayload
 {
-    vec3 ambient;
-    vec3 diffuse;
-    vec3 specular;
-    vec3 emission;
-    float shininess;
-    // TODO: define the material structure
+    int visible;
 };
 
-struct MyAttributes
+
+struct Material
+{
+    vec3 Ka; // ambient + emission
+    vec3 Kd; // diffuse
+    vec3 Ks; // specular
+    vec3 Ke; // emission
+    float ex; // specular shininess
+};
+
+
+struct Attribute : public IAttribute
 {
     vec3 hit;
     vec3 normal;
     vec3 incident;
-    MyMaterial material;
-    // TODO: define the attributes structure
+    int mid;
 };
+
 
 struct Triangle : public IPrimitive
 {
     vec3 p0, p1, p2;
-    mat4 transform;
-    MyMaterial material;
+    int mid; // material id
 };
+
 
 struct Sphere : public IPrimitive
 {
-    mat4 transform;
-    MyMaterial material;
+    vec3 p; // center
+    float r; // radius
+    int mid; // material id
+    int tid; // transform matrix id
 };
+
+
+struct PointLight
+{
+    vec3 pos;
+    vec3 color;
+    float c0, c1, c2; // attenuation coef
+};
+
+
+struct DirectionalLight
+{
+    vec3 dir;
+    vec3 color;
+};
+
 
 struct Scene
 {
-    // Info about the output image
     std::string outputFilename;
     unsigned int width, height;
 
-    std::string integratorName;
+    CameraFrame cameraFrame;
+    int depth;
 
-    std::vector<vec3> vertices;
-
-    std::vector<Triangle> triangles;
-    std::vector<Sphere> spheres;
+    std::vector<Material> materials;
+    std::vector<mat4> transforms; // for sphere
 
     std::vector<DirectionalLight> dlights;
     std::vector<PointLight> plights;
+    
+    std::shared_ptr<SceneNode> root;
 
-    int depth;
-
-    // TODO: add other variables that you need here
-    CameraFrame cameraFrame;
-
-    Scene()
-    {
-        outputFilename = "raytrace.png";
-        integratorName = "raytracer";
-    }
+    std::shared_ptr<IShader> miss;
 };
 
 class SceneLoader
 {
-private:
-    std::stack<mat4> transStack;
-
-    /**
-     * Right multiply M to the top matrix of transform stack.
-     */
-    void rightMultiply(const mat4& M);
-
-    /**
-     * Transform a point with the top matrix of transform stack.
-     */
-    vec3 transformPoint(vec3 v);
-
-    /**
-     * Transform an normal with the top matrix of transform stack.
-     */
-    vec3 transformNormal(vec3 n);
-
-    /**
-     * Read values from a stringstream.
-     */
-    template <class T>
-    bool readValues(std::stringstream& s, const int numvals, T* values);
-
 public:
-    std::shared_ptr<Scene> load(std::string sceneFilename);
+    void Load(const std::string& filename, Scene* scene);
+
+private:
+    void load(const std::string& filename, Scene* scene);
+
+private:
+    std::vector<Triangle> triangles;
+    std::vector<Sphere> spheres;
 };
 
 #endif
