@@ -165,7 +165,7 @@ struct PhongShader : public IShader
             DirectionalLight light = dlights[i];
             vec3 L = normalize(-light.dir);
 
-            float epsilon = 0.001f;// 0.00001f;
+            float epsilon = 0.0001f;// 0.00001f;
             Ray ray{attrib.hit + attrib.normal * epsilon, L, kInfP, 0};
             ShadowPayload shadowPayload;
             shadowPayload.visible = true;
@@ -193,8 +193,8 @@ struct PhongShader : public IShader
             vec3 L = normalize(P);
             float r = length(P);
 
-            float epsilon = 0.001f;// 0.00001f;
-            Ray ray{attrib.hit + attrib.normal * epsilon, L, r, 0};
+            float epsilon = 0.0001f;// 0.00001f;
+            Ray ray{attrib.hit + attrib.normal * epsilon, L, r, 0.01f};
             ShadowPayload shadowPayload;
             shadowPayload.visible = true;
             Trace(scene->root.get(), ray, shadowPayload, 1, true, nullptr);
