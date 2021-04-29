@@ -9,24 +9,23 @@ project(XTracing VERSION 1.0 LANGUAGES CXX)
 # glad
 # ------------------------------------------------------------------
 set(glad_dir "${CMAKE_SOURCE_DIR}/3rdparty/glad")
-include_directories("${glad_dir}")
 add_library(glad
     "${glad_dir}/glad.c"
     "${glad_dir}/glad.h"
     "${glad_dir}/khrplatform.h")
+target_include_directories(glad PUBLIC "${glad_dir}")
 
 # ------------------------------------------------------------------
 # glfw
 # ------------------------------------------------------------------
 set(glfw_dir "${CMAKE_SOURCE_DIR}/3rdparty/glfw")
-include_directories("${glfw_dir}/include")
+set(glfw_include_dir "${glfw_dir}/include")
 add_subdirectory("${glfw_dir}")
 
 # ------------------------------------------------------------------
 # imgui
 # ------------------------------------------------------------------
 set(imgui_dir "${CMAKE_SOURCE_DIR}/3rdparty/imgui")
-include_directories("${imgui_dir}")
 add_library(imgui
     "${imgui_dir}/imgui.cpp"
     "${imgui_dir}/imgui_demo.cpp"
@@ -42,7 +41,11 @@ add_library(imgui
     "${imgui_dir}/imstb_truetype.h"
     "${imgui_dir}/imgui_impl_glfw.h"
     "${imgui_dir}/imgui_impl_opengl3.h")
+target_include_directories(imgui PUBLIC "${imgui_dir}")
+target_include_directories(imgui PUBLIC "${glad_dir}")
+target_include_directories(imgui PUBLIC "${glfw_include_dir}")
 add_dependencies(imgui glad)
+add_dependencies(imgui glfw)
 
 # ------------------------------------------------------------------
 # assimp
@@ -55,26 +58,36 @@ add_dependencies(imgui glad)
 # glm
 # ------------------------------------------------------------------
 set(glm_dir "${CMAKE_SOURCE_DIR}/3rdparty/glm")
-include_directories("${glm_dir}")
+add_library(glm INTERFACE)
+target_include_directories(glm INTERFACE "${glm_dir}")
 
 # ------------------------------------------------------------------
 # stb
 # ------------------------------------------------------------------
 set(stb_dir "${CMAKE_SOURCE_DIR}/3rdparty/stb")
-include_directories("${stb_dir}")
+add_library(stb INTERFACE)
+target_include_directories(stb INTERFACE "${stb_dir}")
 
 # ------------------------------------------------------------------
 # tiny_obj_loader
 # ------------------------------------------------------------------
 set(tiny_obj_loader_dir "${CMAKE_SOURCE_DIR}/3rdparty/tiny_obj_loader")
-include_directories("${tiny_obj_loader_dir}")
+add_library(tiny_obj_loader INTERFACE)
+target_include_directories(tiny_obj_loader INTERFACE "${tiny_obj_loader_dir}")
+
+# ------------------------------------------------------------------
+# xtracing
+# ------------------------------------------------------------------
+set(xtracing_dir "${CMAKE_SOURCE_DIR}/xtracing")
+add_library(xtracing INTERFACE)
+target_link_libraries(xtracing INTERFACE glm)
+target_include_directories(xtracing INTERFACE "${xtracing_dir}")
 
 # ------------------------------------------------------------------
 # 
 # ------------------------------------------------------------------
-include_directories("${CMAKE_SOURCE_DIR}/3rdparty")
-include_directories("${CMAKE_SOURCE_DIR}/xtracing")
-include_directories("${CMAKE_SOURCE_DIR}/util")
+#include_directories("${CMAKE_SOURCE_DIR}/3rdparty")
+#include_directories("${CMAKE_SOURCE_DIR}/util")
 
 add_subdirectory(util)
 add_subdirectory(demo/demo_instantializer)

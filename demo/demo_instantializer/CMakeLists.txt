@@ -4,8 +4,7 @@ add_executable(demo_instantializer
     Renderer.h
     Scene.cpp
     Scene.h)
-
-include_directories("${CMAKE_CURRENT_LIST_DIR}")
-
 add_dependencies(demo_instantializer util)
 target_link_libraries(demo_instantializer util)
+target_link_libraries(demo_instantializer tiny_obj_loader)
+target_include_directories(demo_instantializer PRIVATE "${CMAKE_CURRENT_LIST_DIR}")

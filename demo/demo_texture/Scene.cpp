@@ -1,7 +1,5 @@
 #include "Scene.h"
 
-#define TINYOBJLOADER_IMPLEMENTATION // define this in only *one* .cc
-#include "tiny_obj_loader.h"
 
 template<typename T>
 inline T GetPixel2D(const std::vector<T>& texture, const vec2& uv, const int2& dim)
