@@ -8,9 +8,9 @@
 class Renderer
 {
 public:
-    void Render(std::vector<vec3>& buffer, Scene* scene);
+    void Render(std::vector<vec3>& buffer, const Scene& scene);
     
-    vec3 RenderPixel(const int2& index, const int2& dim, Scene* scene);
+    vec3 RenderPixel(const int2& index, const int2& dim, const Scene& scene);
 
     void SetNumFrame(int num)
     { numMaxFrame = num; }

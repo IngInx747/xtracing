@@ -82,34 +82,26 @@ struct DirectionalLight
 
 struct Scene
 {
-    std::string outputFilename;
-    unsigned int width, height;
+    std::string outputFilename{"output.png"};
+    unsigned int width = 256;
+    unsigned int height = 256;
 
     CameraFrame cameraFrame;
-    int depth;
+    int depth = 5;
 
     std::vector<Material> materials;
     std::vector<mat4> transforms; // for sphere
 
+    std::vector<Triangle> triangles; // temp buffers
+    std::vector<Sphere> spheres;
+
     std::vector<DirectionalLight> dlights;
     std::vector<PointLight> plights;
     
+    std::shared_ptr<IShader> miss;
     std::shared_ptr<SceneNode> root;
 
-    std::shared_ptr<IShader> miss;
-};
-
-class SceneLoader
-{
-public:
-    void Load(const std::string& filename, Scene* scene);
-
-private:
-    void load(const std::string& filename, Scene* scene);
-
-private:
-    std::vector<Triangle> triangles;
-    std::vector<Sphere> spheres;
+    void Build();
 };
 
 #endif

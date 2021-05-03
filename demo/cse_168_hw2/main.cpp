@@ -1,8 +1,9 @@
 #include <xtracing.h>
 
-#include "util.h"
 #include "Scene.h"
+#include "SceneLoader.h"
 #include "Renderer.h"
+#include "util.h"
 
 int main(int argc, char** argv)
 {
@@ -10,23 +11,26 @@ int main(int argc, char** argv)
     {
         double dt;
 
-        // Load the scene
-        std::shared_ptr<Scene> scene = std::make_shared<Scene>();
-        dt = When();
-        LoadScene(scene.get());
-        printf("Scene building time = %lf(s)\n", When() - dt);
+        // Check for scene file 
+        if (argc <= 1) throw std::runtime_error("Need 1 argument");
 
-        // pixel buffer
-        std::vector<vec3> buffer(scene->width * scene->height);
-
+        Scene scene;
+        SceneLoader loader;
         Renderer renderer;
-        renderer.SetNumFrame(1);
-
+        std::vector<vec3> buffer;
+        
+        // Load the scene
         dt = When();
-        renderer.Render(buffer, scene.get());
+        loader.Load(argv[1], scene);
+        printf("Scene building time = %lf(s)\n", When() - dt);
+        buffer.resize(scene.width * scene.height);
+
+        // Render the scene
+        dt = When();
+        renderer.Render(buffer, scene);
         printf("Rendering time = %lf(s)\n", When() - dt);
 
-        SaveImagePNG(buffer, scene->width, scene->height, scene->outputFilename.c_str());
+        SaveImagePNG(buffer, scene.width, scene.height, scene.outputFilename.c_str());
     }
     catch (const std::exception & ex)
     {

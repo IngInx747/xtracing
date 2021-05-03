@@ -35,7 +35,7 @@ struct Material
     vec3 Ka; // ambient + emission
     vec3 Kd; // diffuse
     vec3 Ks; // specular
-    vec3 Kr; // reflect
+    vec3 Ke; // emission
     float ex; // specular shininess
 };
 
@@ -61,6 +61,7 @@ struct Sphere : public IPrimitive
     vec3 p; // center
     float r; // radius
     int mid; // material id
+    int tid; // transform matrix id
 };
 
 
@@ -81,22 +82,26 @@ struct DirectionalLight
 
 struct Scene
 {
-    std::string outputFilename;
-    unsigned int width, height;
+    std::string outputFilename{"output.png"};
+    unsigned int width = 256;
+    unsigned int height = 256;
 
     CameraFrame cameraFrame;
-    int depth = 1;
+    int depth = 5;
+
+    std::vector<Material> materials;
+    std::vector<mat4> transforms; // for sphere
+
+    std::vector<Triangle> triangles; // temp buffers
+    std::vector<Sphere> spheres;
 
     std::vector<DirectionalLight> dlights;
     std::vector<PointLight> plights;
-    std::vector<Material> materials;
-
+    
+    std::shared_ptr<IShader> miss;
     std::shared_ptr<SceneNode> root;
 
-    std::shared_ptr<IShader> miss;
+    void Build();
 };
-
-
-bool LoadScene(Scene* scene);
 
 #endif

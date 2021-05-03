@@ -1,18 +1,18 @@
 #include "Renderer.h"
 
-vec3 Renderer::RenderPixel(const int2& index, const int2& dim, Scene* scene)
+vec3 Renderer::RenderPixel(const int2& index, const int2& dim, const Scene& scene)
 {
     vec3 result{0, 0, 0};
     Payload payload;
     payload.done = false;
-    payload.depth = scene->depth;
+    payload.depth = scene.depth;
     payload.mask = {1, 1, 1};
     float epsilon = 0.001f;
 
     // ray 0
     vec2 p = vec2{index.x, index.y} + vec2{0.5f, 0.5f};
     vec2 d = p / vec2{dim.x, dim.y} * 2.0f - 1.0f;
-    CameraFrame& cam = scene->cameraFrame;
+    const CameraFrame& cam = scene.cameraFrame;
     vec3 dir = normalize(d.x * cam.u + d.y * cam.v + cam.w);
     vec3 org = cam.o;
 
@@ -20,7 +20,7 @@ vec3 Renderer::RenderPixel(const int2& index, const int2& dim, Scene* scene)
     {
         Ray ray{org, dir, kInfP, epsilon}; // Ray 1 ~ n
 
-        Trace(scene->root.get(), ray, payload, 0, false, scene->miss);
+        Trace(scene.root.get(), ray, payload, 0, false, scene.miss);
 
         result += payload.radiance;
 
@@ -32,10 +32,10 @@ vec3 Renderer::RenderPixel(const int2& index, const int2& dim, Scene* scene)
     return result;
 }
 
-void Renderer::Render(std::vector<vec3>& buffer, Scene* scene)
+void Renderer::Render(std::vector<vec3>& buffer, const Scene& scene)
 {
-    int width = scene->width;
-    int height = scene->height;
+    int width = scene.width;
+    int height = scene.height;
 
     while (currentFrame < numMaxFrame)
     {
