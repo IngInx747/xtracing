@@ -1,5 +1,6 @@
-#include <xtracing.h>
+#include <iostream>
 
+#include "xtracing.h"
 #include "Scene.h"
 #include "SceneLoader.h"
 #include "Renderer.h"

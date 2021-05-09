@@ -1,13 +1,12 @@
 #include "SceneLoader.h"
 
-void SceneLoader::Load(const std::string& filename, Scene& scene)
-{
-    // load models and light sources
-    load(filename, scene);
-
-    // build scene using imported data
-    scene.Build();
-}
+#include <string>
+#include <memory>
+#include <fstream>
+#include <sstream>
+#include <vector>
+#include <stack>
+#include <iostream>
 
 
 template <class T>
@@ -23,6 +22,16 @@ bool readValues(std::stringstream& s, const int numvals, T* values)
         }
     }
     return true;
+}
+
+
+void SceneLoader::Load(const std::string& filename, Scene& scene)
+{
+    // load models and light sources
+    load(filename, scene);
+
+    // build scene using imported data
+    scene.Build();
 }
 
 
@@ -48,6 +57,9 @@ void SceneLoader::load(const std::string& filename, Scene& scene)
     material.Ks = { 0, 0, 0 };
     material.Ke = { 0, 0, 0 };
     material.ex = 0;
+
+    Material diffuseWhite;
+    diffuseWhite.Ke = { 1, 1, 1 };
 
     // static var: directional light
     float c0 = 1, c1 = 0, c2 = 0;
@@ -195,27 +207,58 @@ void SceneLoader::load(const std::string& filename, Scene& scene)
         else if (cmd == "directional" && readValues(s, 6, fvalues))
         {
             vec3 dir = { fvalues[0], fvalues[1], fvalues[2] };
-            vec3 clo = { fvalues[3], fvalues[4], fvalues[5] };
+            vec3 color = { fvalues[3], fvalues[4], fvalues[5] };
 
             DirectionalLight light;
             light.dir = -dir; // direction to light source
-            light.color = clo;
+            light.color = color;
 
             scene.dlights.push_back(light);
         }
         else if (cmd == "point" && readValues(s, 6, fvalues))
         {
             vec3 pos = { fvalues[0], fvalues[1], fvalues[2] };
-            vec3 clo = { fvalues[3], fvalues[4], fvalues[5] };
+            vec3 color = { fvalues[3], fvalues[4], fvalues[5] };
 
             PointLight light;
             light.pos = pos;
-            light.color = clo;
+            light.color = color;
             light.c0 = c0;
             light.c1 = c1;
             light.c2 = c2;
 
             scene.plights.push_back(light);
+        }
+        else if (cmd == "quadLight" && readValues(s, 12, fvalues))
+        {
+            vec3 a = { fvalues[0], fvalues[1], fvalues[2] };
+            vec3 ab = { fvalues[3], fvalues[4], fvalues[5] };
+            vec3 ac = { fvalues[6], fvalues[7], fvalues[8] };
+            vec3 color = { fvalues[9], fvalues[10], fvalues[11] };
+
+            QuadLight light;
+            light.a = a;
+            light.ab = ab;
+            light.ac = ac;
+            light.color = color;
+
+            scene.qlights.push_back(light);
+
+            Triangle tri1;
+            tri1.p0 = a;
+            tri1.p1 = a + ab;
+            tri1.p2 = a + ab + ac;
+            tri1.mid = static_cast<int>(scene.materials.size());
+            scene.materials.push_back(diffuseWhite);
+            scene.triangles.push_back(tri1);
+            
+            Triangle tri2;
+            tri2.p0 = a;
+            tri2.p1 = a + ab + ac;
+            tri2.p2 = a + ac;
+            tri2.mid = static_cast<int>(scene.materials.size());
+            scene.materials.push_back(diffuseWhite);
+            scene.triangles.push_back(tri2);
         }
         else if (cmd == "integrator" && readValues(s, 1, svalues))
         {

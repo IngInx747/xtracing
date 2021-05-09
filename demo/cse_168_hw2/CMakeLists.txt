@@ -1,5 +1,11 @@
 add_executable(cse_168_hw2
     main.cpp
+    Geometry.cpp
+    Geometry.h
+    Light.cpp
+    Light.h
+    Shader.cpp
+    Shader.h
     Renderer.cpp
     Renderer.h
     Scene.cpp
