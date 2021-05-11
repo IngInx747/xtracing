@@ -47,6 +47,8 @@ struct PhongShader : public IShader
 struct ShadowShader : public IShader
 {
     void operator() (IPayload& payload_, const IAttribute& attrib_) const;
+
+    Scene* scene;
 };
 
 

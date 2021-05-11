@@ -50,22 +50,28 @@ void PhongShader::operator() (IPayload& payload_, const IAttribute& attrib_) con
     payload.radiance = result * payload.mask;
     payload.mask *= material.Ks;
 
-    if (length(payload.mask) < 0.005f)
+    //if (length(payload.mask) < 0.005f)
     {
         payload.done = true;
     }
-    else
-    {
-        payload.origin = attrib.hit;
-        payload.direction = reflect(attrib.incident, attrib.normal);
-        --payload.depth;
-    }
+    //else
+    //{
+    //    payload.origin = attrib.hit;
+    //    payload.direction = reflect(attrib.incident, attrib.normal);
+    //    --payload.depth;
+    //}
 }
 
 
 void ShadowShader::operator() (IPayload& payload_, const IAttribute& attrib_) const
 {
     ShadowPayload& payload = dynamic_cast<ShadowPayload&>(payload_);
+
+    // To enable online visibility check, comment off IsShadowRay() in the colliders
+    //const Attribute& attrib = dynamic_cast<const Attribute&>(attrib_);
+    //const Material& material = scene->materials[attrib.mid];
+    //if (!material.ls) payload.visible = false;
+
     payload.visible = false;
     TerminateRay(); // actually has no impact
 }

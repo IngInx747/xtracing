@@ -23,6 +23,7 @@ void Scene::Build()
     std::shared_ptr<PhongShader> rayClosestHit = std::make_shared<PhongShader>();
     rayClosestHit->scene = this;
     std::shared_ptr<ShadowShader> shadowAnyHit = std::make_shared<ShadowShader>();
+    shadowAnyHit->scene = this;
     std::shared_ptr<MaterialProgram> materialProgram = std::make_shared<MaterialProgram>();
     materialProgram->SetClosestHitProgram<PhongShader>(0, rayClosestHit); // 0: common ray
     materialProgram->SetAnyHitProgram<ShadowShader>(1, shadowAnyHit); // 1: shadow ray

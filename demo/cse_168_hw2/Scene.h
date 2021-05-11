@@ -15,7 +15,7 @@ struct Scene
     unsigned int height = 256;
 
     CameraFrame cameraFrame;
-    int depth = 5;
+    int depth = 1;
 
     std::vector<Material> materials;
     std::vector<mat4> transforms; // for sphere
