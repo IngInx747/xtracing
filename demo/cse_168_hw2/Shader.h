@@ -32,6 +32,7 @@ struct Material
     vec3 Ks; // specular
     vec3 Ke; // emission
     float ex; // specular shininess
+    bool ls = 0; // is light source
 };
 
 

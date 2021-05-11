@@ -60,6 +60,7 @@ void SceneLoader::load(const std::string& filename, Scene& scene)
 
     Material lightMaterial;
     lightMaterial.Ke = { 1, 1, 1 };
+    lightMaterial.ls = true;
 
     // static var: directional light
     float c0 = 1, c1 = 0, c2 = 0;
@@ -262,9 +263,27 @@ void SceneLoader::load(const std::string& filename, Scene& scene)
         }
         else if (cmd == "integrator" && readValues(s, 1, svalues))
         {
-            ;
+            if (svalues[0] == "analyticdirect")
+                scene.integrator = Scene::Integrator::ANALYTIC_DIRECT;
+            else if (svalues[0] == "direct")
+                scene.integrator = Scene::Integrator::DIRECT;
+        }
+        else if (cmd == "lightsamples" && readValues(s, 1, ivalues))
+        {
+            scene.nLightSamples = ivalues[0];
+        }
+        else if (cmd == "lightstratify" && readValues(s, 1, svalues))
+        {
+            if (svalues[0] == "on")
+                scene.bLightstratify = true;
+            else
+                scene.bLightstratify = false;
         }
     }
+
+    printf("Integrator: %d\n", scene.integrator);
+    printf("Number of Light Sample: %d\n", scene.nLightSamples);
+    printf("Enable Light Stratify: %d\n", scene.bLightstratify);
 
     in.close();
 }

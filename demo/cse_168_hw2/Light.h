@@ -34,15 +34,31 @@ struct QuadLight
 
 
 vec3 ShadeDirectionalLight(
-    const DirectionalLight& light, const Attribute& attrib, const Material& material, SceneNode* root);
+    const DirectionalLight& light,
+    const Attribute& attrib,
+    const Material& material,
+    SceneNode* root);
+
 
 vec3 ShadePointLight(
-    const PointLight& light, const Attribute& attrib, const Material& material, SceneNode* root);
+    const PointLight& light,
+    const Attribute& attrib,
+    const Material& material,
+    SceneNode* root);
 
-vec3 ShadeQuadLightMonteCarlo(
-    const QuadLight& light, const Attribute& attrib, const Material& material, SceneNode* root);
 
 vec3 ShadeQuadLightAnalytic(
-    const QuadLight& light, const Attribute& attrib, const Material& material);
+    const QuadLight& light,
+    const Attribute& attrib,
+    const Material& material);
+
+
+vec3 ShadeQuadLightMonteCarlo(
+    const QuadLight& light,
+    const Attribute& attrib,
+    const Material& material,
+    SceneNode* root,
+    int numSample,
+    bool stratified);
 
 #endif

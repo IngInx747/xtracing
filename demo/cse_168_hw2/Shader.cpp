@@ -10,14 +10,16 @@ void PhongShader::operator() (IPayload& payload_, const IAttribute& attrib_) con
     const Attribute& attrib = dynamic_cast<const Attribute&>(attrib_);
     const Material& material = scene->materials[attrib.mid];
     SceneNode* root = scene->root.get();
-
     vec3 result{};
 
-    //payload.radiance += (attrib.normal + 1.f) * 0.5f;
-    //--payload.depth;
-    //return;
-
     result += material.Ka + material.Ke; // ambient + emission
+
+    if (material.ls)
+    {
+        payload.radiance = result * payload.mask;
+        payload.done = true;
+        return;
+    }
 
     const auto dlights = scene->dlights;
     const auto plights = scene->plights;
@@ -38,7 +40,11 @@ void PhongShader::operator() (IPayload& payload_, const IAttribute& attrib_) con
     for (int i = 0; i < qlights.size(); ++i)
     {
         const QuadLight& light = qlights[i];
-        result += ShadeQuadLightAnalytic(light, attrib, material);
+        if (scene->integrator == Scene::Integrator::ANALYTIC_DIRECT)
+            result += ShadeQuadLightAnalytic(light, attrib, material);
+        else if (scene->integrator == Scene::Integrator::DIRECT)
+            result += ShadeQuadLightMonteCarlo(light, attrib, material,
+                root, scene->nLightSamples, scene->bLightstratify);
     }
     
     payload.radiance = result * payload.mask;

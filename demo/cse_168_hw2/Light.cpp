@@ -110,21 +110,22 @@ vec3 ShadeQuadLightMonteCarlo(
     std::function<vec3(const vec3&)> sample = [&](const vec3& xx)->vec3
     {
         vec3 wi = normalize(xx - x);
-        if (dot(wi, n) < 0.f) return vec3{};
+        //if (dot(wi, n) < 0.f) return vec3{};
         float Rs = dot(xx - x, xx - x); // |x - x'|^2
 
         float epsilon = 0.0001f; // 0.00001f;
         Ray ray{x + n * epsilon, wi, std::sqrtf(Rs), 0.01f};
-        if (IsRayOccluded(ray, root)) return vec3{};
+        //if (IsRayOccluded(ray, root)) return vec3{};
 
         vec3 F = (Kd + Ks * (s + 2.f) * 0.5f * std::powf(std::max(dot(r, wi), 0.f), s)) * k1_Pi;
         float G = dot(wi, n) * std::fabsf(dot(wi, nl)) / Rs;
 
+        return F * G;
     };
 
     if (stratified)
     {
-        int Nc = std::ceilf(std::sqrtf(Ns));
+        int Nc = static_cast<int>(std::ceilf(std::sqrtf(static_cast<float>(Ns))));
         Ns = Nc * Nc;
 
         for (int i = 0; i < Nc; ++i)

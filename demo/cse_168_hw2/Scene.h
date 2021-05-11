@@ -20,8 +20,8 @@ struct Scene
     std::vector<Material> materials;
     std::vector<mat4> transforms; // for sphere
 
-    std::vector<Triangle> triangles; // temp buffers
-    std::vector<Sphere> spheres;
+    std::vector<Triangle> triangles; // temp tri buffers
+    std::vector<Sphere> spheres; // temp sphere buffers
 
     std::vector<DirectionalLight> dlights;
     std::vector<PointLight> plights;
@@ -29,6 +29,15 @@ struct Scene
     
     std::shared_ptr<IShader> miss;
     std::shared_ptr<SceneNode> root;
+
+    enum Integrator
+    {
+        DIRECT,
+        ANALYTIC_DIRECT,
+    } integrator = DIRECT;
+
+    int nLightSamples = 1;
+    bool bLightstratify = 0;
 
     void Build();
 };
