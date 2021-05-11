@@ -39,7 +39,10 @@ vec3 ShadeDirectionalLight(
 vec3 ShadePointLight(
     const PointLight& light, const Attribute& attrib, const Material& material, SceneNode* root);
 
-vec3 ShadeQuadLight(
+vec3 ShadeQuadLightMonteCarlo(
     const QuadLight& light, const Attribute& attrib, const Material& material, SceneNode* root);
+
+vec3 ShadeQuadLightAnalytic(
+    const QuadLight& light, const Attribute& attrib, const Material& material);
 
 #endif

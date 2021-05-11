@@ -58,8 +58,8 @@ void SceneLoader::load(const std::string& filename, Scene& scene)
     material.Ke = { 0, 0, 0 };
     material.ex = 0;
 
-    Material diffuseWhite;
-    diffuseWhite.Ke = { 1, 1, 1 };
+    Material lightMaterial;
+    lightMaterial.Ke = { 1, 1, 1 };
 
     // static var: directional light
     float c0 = 1, c1 = 0, c2 = 0;
@@ -241,7 +241,7 @@ void SceneLoader::load(const std::string& filename, Scene& scene)
             light.ab = ab;
             light.ac = ac;
             light.color = color;
-
+            lightMaterial.Ke = color;
             scene.qlights.push_back(light);
 
             Triangle tri1;
@@ -249,7 +249,7 @@ void SceneLoader::load(const std::string& filename, Scene& scene)
             tri1.p1 = a + ab;
             tri1.p2 = a + ab + ac;
             tri1.mid = static_cast<int>(scene.materials.size());
-            scene.materials.push_back(diffuseWhite);
+            scene.materials.push_back(lightMaterial);
             scene.triangles.push_back(tri1);
             
             Triangle tri2;
@@ -257,7 +257,7 @@ void SceneLoader::load(const std::string& filename, Scene& scene)
             tri2.p1 = a + ab + ac;
             tri2.p2 = a + ac;
             tri2.mid = static_cast<int>(scene.materials.size());
-            scene.materials.push_back(diffuseWhite);
+            scene.materials.push_back(lightMaterial);
             scene.triangles.push_back(tri2);
         }
         else if (cmd == "integrator" && readValues(s, 1, svalues))

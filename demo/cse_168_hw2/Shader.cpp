@@ -38,7 +38,7 @@ void PhongShader::operator() (IPayload& payload_, const IAttribute& attrib_) con
     for (int i = 0; i < qlights.size(); ++i)
     {
         const QuadLight& light = qlights[i];
-        result += ShadeQuadLight(light, attrib, material, root);
+        result += ShadeQuadLightAnalytic(light, attrib, material);
     }
     
     payload.radiance = result * payload.mask;

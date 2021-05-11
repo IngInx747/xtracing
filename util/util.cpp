@@ -3,6 +3,7 @@
 
 #include <fstream>
 #include <string>
+#include <random>
 #include <chrono>
 
 #define STB_IMAGE_IMPLEMENTATION
@@ -24,6 +25,26 @@ double When()
 }
 
 ////////////////////////////////////////////////////////////////
+/// Random
+////////////////////////////////////////////////////////////////
+
+static std::mt19937_64 g_rng;
+
+
+void SetRandomSeed(long long seed)
+{
+    std::seed_seq ss{uint32_t(seed & 0xffffffff), uint32_t(seed >> 32)};
+    g_rng.seed(ss);
+}
+
+
+float GetRandom(float a, float b)
+{
+    std::uniform_real_distribution<float> urd(a, b);
+    return urd(g_rng);
+}
+
+////////////////////////////////////////////////////////////////
 /// Pixel
 ////////////////////////////////////////////////////////////////
 
@@ -37,6 +58,7 @@ uchar4 Vec2Rgba(const vec3& fcolor)
         static_cast<unsigned char>(255)};
 }
 
+
 // Convert 256-bit color to float color
 vec3 Rgba2Vec(const uchar4& ucolor)
 {
@@ -46,6 +68,7 @@ vec3 Rgba2Vec(const uchar4& ucolor)
         ucolor.b / 255.0f
     };
 }
+
 
 bool LoadImage(std::vector<uchar4>& pixels, int& width, int& height, int& channel, const char* filename)
 {
@@ -129,11 +152,13 @@ void SaveImagePPM(const std::vector<uchar4>& pixels, int width, int height, cons
     }
 }
 
+
 void SaveImagePNG(const std::vector<uchar4>& pixels, int width, int height, const char* filename)
 {
     stbi_flip_vertically_on_write(1);
     stbi_write_png(filename, width, height, sizeof(uchar4), (void*)pixels.data(), width * sizeof(uchar4));
 }
+
 
 void SaveImagePNG(const std::vector<vec3>& pixels, int width, int height, const char* filename)
 {
