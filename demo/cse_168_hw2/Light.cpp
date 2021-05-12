@@ -110,18 +110,19 @@ vec3 ShadeQuadLightMonteCarlo(
     std::function<vec3(const vec3&)> sample = [&](const vec3& xx)->vec3
     {
         vec3 wi = normalize(xx - x);
-        if (dot(wi, n) < 0.f) return vec3{};
+        if (dot(wi, n) < 0.f || dot(wi, nl) < 0.f) return vec3{};
         float Rs = dot(xx - x, xx - x); // |x - x'|^2
         float R = std::sqrtf(Rs);
 
-        float offset_surface = 0.00002f; // 0.00001f;
-        float ratio_light_src = 0.99f;
+        //float offset_surface = 0.00002f; // 0.00001f;
+        float ratio_light_src = 0.999f;
         float offset_ignore_self = 0.0001f;
-        Ray ray{x + n * offset_surface, wi, R * ratio_light_src, offset_ignore_self};
+        //Ray ray{x + n * offset_surface, wi, R * ratio_light_src, offset_ignore_self};
+        Ray ray{x, wi, R * ratio_light_src, offset_ignore_self};
         if (IsRayOccluded(ray, root)) return vec3{};
 
         vec3 F = (Kd + Ks * (s + 2.f) * 0.5f * std::powf(std::max(dot(r, wi), 0.f), s)) * k1_Pi;
-        float G = dot(wi, n) * std::fabsf(dot(wi, nl)) / Rs;
+        float G = dot(wi, n) * dot(wi, nl) / Rs;
 
         return F * G;
     };

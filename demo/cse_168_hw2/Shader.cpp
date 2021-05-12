@@ -46,14 +46,17 @@ void PhongShader::operator() (IPayload& payload_, const IAttribute& attrib_) con
             result += ShadeQuadLightMonteCarlo(light, attrib, material,
                 root, scene->nLightSamples, scene->bLightstratify);
     }
-    
-    payload.radiance = result * payload.mask;
-    payload.mask *= material.Ks;
 
+    payload.radiance = result;
+    payload.done = true;
+    
+    //payload.radiance = result * payload.mask;
+    //payload.mask *= material.Ks;
+    //
     //if (length(payload.mask) < 0.005f)
-    {
-        payload.done = true;
-    }
+    //{
+    //    payload.done = true;
+    //}
     //else
     //{
     //    payload.origin = attrib.hit;
