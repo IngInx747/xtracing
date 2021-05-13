@@ -28,20 +28,37 @@ double When()
 /// Random
 ////////////////////////////////////////////////////////////////
 
-static std::mt19937_64 g_rng;
-
-
-void SetRandomSeed(long long seed)
+float GetRandom(float a, float b, long long seed)
 {
-    std::seed_seq ss{uint32_t(seed & 0xffffffff), uint32_t(seed >> 32)};
-    g_rng.seed(ss);
+    thread_local static int init = 1;
+    thread_local static std::mt19937_64 rng;
+
+    if (init)
+    {
+        std::seed_seq ss{uint32_t(seed & 0xffffffff), uint32_t(seed >> 32)};
+        rng.seed(ss);
+        init = 0;
+    }
+
+    std::uniform_real_distribution<float> urd(a, b);
+    return urd(rng);
 }
 
 
-float GetRandom(float a, float b)
+int GetRandom(int a, int b, long long seed)
 {
-    std::uniform_real_distribution<float> urd(a, b);
-    return urd(g_rng);
+    thread_local static int init = 1;
+    thread_local static std::mt19937_64 rng;
+
+    if (init)
+    {
+        std::seed_seq ss{uint32_t(seed & 0xffffffff), uint32_t(seed >> 32)};
+        rng.seed(ss);
+        init = 0;
+    }
+
+    std::uniform_int_distribution<int> urd(a, b);
+    return urd(rng);
 }
 
 ////////////////////////////////////////////////////////////////

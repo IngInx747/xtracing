@@ -12,9 +12,6 @@ int main(int argc, char** argv)
     {
         double dt;
 
-        // Set random seed
-        SetRandomSeed(0);
-
         // Check for scene file 
         if (argc <= 1) throw std::runtime_error("Need 1 argument");
 
