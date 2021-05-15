@@ -866,7 +866,7 @@ protected:
 /// Context & Functions
 ////////////////////////////////////////////////////////////////
 
-inline bool Trace(SceneNode* node, Ray& ray, IPayload& payload, int ray_type, bool shadow_ray, std::shared_ptr<IShader> miss)
+inline bool Trace(SceneNode* node, Ray& ray, IPayload& payload, int ray_type, bool shadow_ray, IShader* miss)
 {
     IntersectInfo recv;
     IntersectArgs args{&recv, mat4{1.0f}};

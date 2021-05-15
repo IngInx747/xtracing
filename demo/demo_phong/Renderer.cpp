@@ -20,7 +20,7 @@ vec3 Renderer::RenderPixel(const int2& index, const int2& dim, Scene* scene)
     {
         Ray ray{org, dir, kInfP, epsilon}; // Ray 1 ~ n
 
-        Trace(scene->root.get(), ray, payload, 0, false, scene->miss);
+        Trace(scene->root.get(), ray, payload, 0, false, scene->miss.get());
 
         result += payload.radiance;
 

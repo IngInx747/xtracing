@@ -12,7 +12,7 @@ vec3 Renderer::RenderPixel(const int2& index, const int2& dim, Scene* scene)
     vec3 org = cam.o;
 
     Ray ray{org, dir, kInfP, 0.001f}; // Ray 1 ~ n
-    Trace(scene->root.get(), ray, payload, 0, 0, scene->miss);
+    Trace(scene->root.get(), ray, payload, 0, 0, scene->miss.get());
 
     return payload.radiance;
 }
