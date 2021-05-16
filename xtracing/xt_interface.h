@@ -1,12 +1,14 @@
 #pragma once
-#ifndef XT_ABSTRACT_H
-#define XT_ABSTRACT_H
+#ifndef XT_SHADER_H
+#define XT_SHADER_H
+
+#include <memory>
 
 #include "xt_aabb.h"
 #include "xt_ray.h"
 
 ////////////////////////////////////////////////////////////////
-/// Interfaces
+/// Primitive Interface
 ////////////////////////////////////////////////////////////////
 
 class IPrimitive
@@ -16,6 +18,10 @@ public:
     virtual int Type() { return 0; }
 };
 
+////////////////////////////////////////////////////////////////
+/// Attribute Interfaces
+/// Intersection information
+////////////////////////////////////////////////////////////////
 
 class IAttribute
 {
@@ -24,6 +30,10 @@ public:
     virtual int Type() { return 0; }
 };
 
+////////////////////////////////////////////////////////////////
+/// Payload Interfaces
+/// Shading result of a single intersection or miss
+////////////////////////////////////////////////////////////////
 
 class IPayload
 {
@@ -32,6 +42,9 @@ public:
     virtual int Type() { return 0; }
 };
 
+////////////////////////////////////////////////////////////////
+/// Bound Program Interface
+////////////////////////////////////////////////////////////////
 
 class IBound
 {
@@ -39,14 +52,31 @@ public:
     virtual Aabb operator() (const IPrimitive& primitive) const = 0;
 };
 
+////////////////////////////////////////////////////////////////
+/// Collide Program Interface
+/// Detect intersection between ray and a single primitive
+////////////////////////////////////////////////////////////////
 
 class ICollide
 {
 public:
     virtual bool operator() (const IPrimitive& primitive, Ray& ray) const = 0;
 
-protected:
-    // built-in functions
+    //
+    void SetWorldTransform(const mat4 transform)
+    { world_transform = transform; }
+
+    //
+    void SetShadowRay(bool is_shadow_ray_)
+    { is_shadow_ray = is_shadow_ray_; }
+
+    //
+    int GetMaterialIndex() const
+    { return material_id; }
+
+    //
+    std::shared_ptr<IAttribute> GetAttribute() const
+    { return attribute; }
 
     // transform matrix from object space to world space, accumulated along the scene nodes
     const mat4& GetWorldTransform() const
@@ -68,27 +98,7 @@ protected:
         attribute = std::dynamic_pointer_cast<IAttribute>(std::make_shared<T_A>(attrib));
     }
 
-private:
-    //
-    void SetWorldTransform(const mat4 transform)
-    { world_transform = transform; }
-
-    //
-    void SetShadowRay(bool is_shadow_ray_)
-    { is_shadow_ray = is_shadow_ray_; }
-
-    //
-    int GetMaterialIndex() const
-    { return material_id; }
-
-    //
-    std::shared_ptr<IAttribute> GetAttribute() const
-    { return attribute; }
-
-    // endpoint of intersecting test
-    friend class PrimitiveNode;
-
-private:
+protected:
     // built-in attributes
 
     // intersecting information
@@ -104,14 +114,22 @@ private:
     bool is_shadow_ray = false;
 };
 
+////////////////////////////////////////////////////////////////
+/// Shader Program Interface
+////////////////////////////////////////////////////////////////
 
 class IShader
 {
 public:
     virtual void operator() (IPayload& payload, const IAttribute& attrib) const = 0;
 
-protected:
-    // built-in functions
+    //
+    bool IsRayTerminated() const
+    { return mIsRayTerminated; }
+
+    //
+    bool IsIntersectionIgnored() const
+    { return mIsIntersectionIgnored; }
 
     //
     void TerminateRay() const
@@ -121,19 +139,7 @@ protected:
     void IgnoreIntersection() const
     { mIsIntersectionIgnored = true; }
 
-private:
-    //
-    bool IsRayTerminated() const
-    { return mIsRayTerminated; }
-
-    //
-    bool IsIntersectionIgnored() const
-    { return mIsIntersectionIgnored; }
-
-    // endpoint of intersecting test
-    friend class PrimitiveNode;
-
-private:
+protected:
     // built-in attributes
 
     //

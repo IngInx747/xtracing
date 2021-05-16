@@ -5,7 +5,7 @@ vec3 Renderer::RenderPixel(const int2& index, const int2& dim, const Scene& scen
     vec3 result{0, 0, 0};
     Payload payload;
     payload.done = false;
-    payload.depth = scene.depth;
+    payload.depth = 0;
     payload.mask = {1, 1, 1};
     float epsilon = 0.001f;
 
@@ -27,7 +27,7 @@ vec3 Renderer::RenderPixel(const int2& index, const int2& dim, const Scene& scen
         org = payload.origin;
         dir = payload.direction;
     }
-    while (!payload.done && payload.depth > 0);
+    while (!payload.done && payload.depth < scene.depth);
 
     return result;
 }

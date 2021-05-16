@@ -61,7 +61,7 @@ void PhongShader::operator() (IPayload& payload_, const IAttribute& attrib_) con
     //{
     //    payload.origin = attrib.hit;
     //    payload.direction = reflect(attrib.incident, attrib.normal);
-    //    --payload.depth;
+    //    ++payload.depth;
     //}
 }
 

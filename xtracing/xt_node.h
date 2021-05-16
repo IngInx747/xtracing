@@ -3,12 +3,23 @@
 #define XT_NODE_H
 
 #include "xt_utility.h"
-#include "xt_accel.h"
-#include "xt_abstract.h"
+#include "xt_geometry.h"
+#include "xt_interface.h"
+#include "xt_bvh.h"
 
 #include <memory>
 #include <numeric> // std::itoa
 #include <unordered_map>
+
+////////////////////////////////////////////////////////////////
+/// Accelerating Structure
+////////////////////////////////////////////////////////////////
+
+enum AccelEnum
+{
+    NONE,
+    BVH
+};
 
 ////////////////////////////////////////////////////////////////
 /// Program collection

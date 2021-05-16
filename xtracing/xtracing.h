@@ -4,7 +4,7 @@
 
 #include "xt_math.h"
 #include "xt_geometry.h"
-#include "xt_accel.h"
+#include "xt_bvh.h"
 #include "xt_node.h"
 #include "xt_texture.h"
 
