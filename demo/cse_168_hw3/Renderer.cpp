@@ -1,35 +1,53 @@
 #include "Renderer.h"
 
+#if defined(_OPENMP)
+#include <omp.h>
+#endif
+
+#include "util.h"
+
 vec3 Renderer::RenderPixel(const int2& index, const int2& dim, const Scene& scene)
 {
     vec3 result{0, 0, 0};
-    Payload payload;
-    payload.done = false;
-    payload.depth = 0;
-    payload.mask = {1, 1, 1};
-    float epsilon = 0.001f;
+    int spp = scene.nSamplePerPixel;
 
-    // ray 0
-    vec2 p = vec2{index.x, index.y} + vec2{0.5f, 0.5f};
-    vec2 d = p / vec2{dim.x, dim.y} * 2.0f - 1.0f;
-    const CameraFrame& cam = scene.cameraFrame;
-    vec3 dir = normalize(d.x * cam.u + d.y * cam.v + cam.w);
-    vec3 org = cam.o;
+#if defined(_OPENMP)
+    int tid = omp_get_thread_num();
+#else
+    int tid = 0;
+#endif
 
-    do
+    GetRandom(0.f, 1.f, tid); // set seed
+
+    for (int i = 0; i < spp; ++i)
     {
-        Ray ray{org, dir, kInfP, epsilon}; // Ray 1 ~ n
+        Payload payload;
+        payload.done = false;
+        payload.depth = 0;
+        payload.weight = vec3{1, 1, 1};
+        payload.seed = tid;
 
-        Trace(scene.root.get(), ray, payload, 0, false, scene.miss.get());
+        // ray 0
+        vec2 p = vec2{index.x, index.y};
+        if (i == 0) p += vec2{0.5f, 0.5f};
+        else p += vec2{GetRandom(), GetRandom()}; // jaggy
+
+        vec2 d = p / vec2{dim.x, dim.y} * 2.0f - 1.0f;
+        const CameraFrame& cam = scene.cameraFrame;
+        payload.direction = normalize(d.x * cam.u + d.y * cam.v + cam.w);
+        payload.origin = cam.o;
+
+        do
+        {
+            Ray ray{payload.origin, payload.direction, kInfP, 0.001f}; // Ray 1 ~ n
+            Trace(scene.root.get(), ray, payload, 0, false, scene.miss.get());
+        }
+        while (!payload.done && payload.depth < scene.depth);
 
         result += payload.radiance;
-
-        org = payload.origin;
-        dir = payload.direction;
     }
-    while (!payload.done && payload.depth < scene.depth);
 
-    return result;
+    return result / static_cast<float>(spp);
 }
 
 void Renderer::Render(std::vector<vec3>& buffer, const Scene& scene)
@@ -39,7 +57,7 @@ void Renderer::Render(std::vector<vec3>& buffer, const Scene& scene)
 
     while (currentFrame < numMaxFrame)
     {
-        //#pragma omp parallel for schedule(dynamic)
+        #pragma omp parallel for// schedule(dynamic)
         for (int i = 0; i < height; ++i)
         {
             //printf("pixel(%d, :)\n", i);

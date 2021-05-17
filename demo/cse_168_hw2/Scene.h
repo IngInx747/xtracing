@@ -36,7 +36,7 @@ struct Scene
         ANALYTIC_DIRECT,
     } integrator = DIRECT;
 
-    int nLightSamples = 1;
+    int nSampleQuadLight = 1;
     bool bLightstratify = 0;
 
     void Build();

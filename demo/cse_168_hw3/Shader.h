@@ -11,11 +11,12 @@ struct Scene;
 struct Payload : public IPayload
 {
     vec3 radiance;
-    vec3 mask;
+    vec3 weight;
     vec3 origin;
     vec3 direction;
     int  depth;
     bool done;
+    long long seed;
 };
 
 
@@ -31,12 +32,28 @@ struct Material
     vec3 Kd; // diffuse
     vec3 Ks; // specular
     vec3 Ke; // emission
-    float ex; // specular shininess
-    bool ls = 0; // is light source
+    float ex{1}; // specular shininess
+    bool ls{0}; // is light source
 };
 
 
-struct PhongShader : public IShader
+struct SimplePathTracer : public IShader
+{
+    void operator() (IPayload& payload_, const IAttribute& attrib_) const;
+
+    Scene* scene;
+};
+
+
+struct NEEPathTracer : public IShader
+{
+    void operator() (IPayload& payload_, const IAttribute& attrib_) const;
+
+    Scene* scene;
+};
+
+
+struct NRPathTracer : public IShader
 {
     void operator() (IPayload& payload_, const IAttribute& attrib_) const;
 

@@ -1,80 +1,72 @@
 #include "Shader.h"
 
+#include "util.h"
 #include "Light.h"
 #include "Scene.h"
 
+using std::sinf;
+using std::cosf;
+using std::acosf;
 
-void PhongShader::operator() (IPayload& payload_, const IAttribute& attrib_) const
+
+//vec3 SampleHemisphere(const vec3& n)
+//{
+//    float u0 = GetRandom();
+//    float u1 = GetRandom();
+//    float t0 = acosf(u0); // theta
+//    float t1 = u1 * 2.f * kPi; // psi
+//    vec3 s{sinf(t0) * cosf(t1), sinf(t0) * sinf(t1), cosf(t0)};
+//    vec3 w = normalize(n);
+//    vec3 u = cross(vec3{0, 1, 0}, w);
+//    if (length(u) < 0.001f) u = cross(vec3{1, 0, 0}, w);
+//    u = normalize(u);
+//    vec3 v = cross(w, u);
+//    return u * s.x + v * s.y + w * s.z;
+//}
+
+vec3 SampleHemisphere(const vec3& n)
+{
+    float u0 = GetRandom();
+    float u1 = GetRandom();
+    float t0 = acosf(u0 * 2.f - 1.f); // theta
+    float t1 = u1 * 2.f * kPi; // psi
+    vec3 s{sinf(t0) * cosf(t1), sinf(t0) * sinf(t1), cosf(t0)};
+    if (dot(n, s) < 0) s = -s;
+    return s;
+}
+
+
+void SimplePathTracer::operator() (IPayload& payload_, const IAttribute& attrib_) const
 {
     Payload& payload = dynamic_cast<Payload&>(payload_);
     const Attribute& attrib = dynamic_cast<const Attribute&>(attrib_);
     const Material& material = scene->materials[attrib.mid];
     SceneNode* root = scene->root.get();
-    vec3 result{};
 
-    result += material.Ka + material.Ke; // ambient + emission
+    const vec3& n = attrib.normal;
+    const vec3& wo = attrib.incident;
+    vec3 r = reflect(wo, n);
+    vec3 wi = SampleHemisphere(n);
 
-    if (material.ls)
-    {
-        payload.radiance = result * payload.mask;
-        payload.done = true;
-        return;
-    }
+    const vec3& Kd = material.Kd;
+    const vec3& Ks = material.Ks;
+    const vec3& Ke = material.Ke;
+    float s = material.ex;
 
-    const auto dlights = scene->dlights;
-    const auto plights = scene->plights;
-    const auto qlights = scene->qlights;
+    //vec3 f = Kd * k1_Pi;
+    vec3 f = (Kd + Ks * (s + 2.f) * 0.5f * std::powf(std::max(dot(r, wi), 0.f), s)) * k1_Pi;
 
-    for (int i = 0; i < dlights.size(); ++i)
-    {
-        const DirectionalLight& light = dlights[i];
-        result += ShadeDirectionalLight(light, attrib, material, root);
-    }
-
-    for (int i = 0; i < plights.size(); ++i)
-    {
-        const PointLight& light = plights[i];
-        result += ShadePointLight(light, attrib, material, root);
-    }
-
-    for (int i = 0; i < qlights.size(); ++i)
-    {
-        const QuadLight& light = qlights[i];
-        if (scene->integrator == Scene::Integrator::ANALYTIC_DIRECT)
-            result += ShadeQuadLightAnalytic(light, attrib, material);
-        else if (scene->integrator == Scene::Integrator::DIRECT)
-            result += ShadeQuadLightMonteCarlo(light, attrib, material,
-                root, scene->nLightSamples, scene->bLightstratify);
-    }
-
-    payload.radiance = result;
-    payload.done = true;
-    
-    //payload.radiance = result * payload.mask;
-    //payload.mask *= material.Ks;
-    //
-    //if (length(payload.mask) < 0.005f)
-    //{
-    //    payload.done = true;
-    //}
-    //else
-    //{
-    //    payload.origin = attrib.hit;
-    //    payload.direction = reflect(attrib.incident, attrib.normal);
-    //    ++payload.depth;
-    //}
+    payload.radiance += Ke * payload.weight;
+    payload.weight *= f * dot(n, wi) * 2.f * kPi; // brdf * (n, wi) * 2Pi
+    payload.origin = attrib.hit;
+    payload.direction = wi;
+    ++payload.depth;
 }
 
 
 void ShadowShader::operator() (IPayload& payload_, const IAttribute& attrib_) const
 {
     ShadowPayload& payload = dynamic_cast<ShadowPayload&>(payload_);
-
-    // To enable online visibility check, comment off IsShadowRay() in the colliders
-    //const Attribute& attrib = dynamic_cast<const Attribute&>(attrib_);
-    //const Material& material = scene->materials[attrib.mid];
-    //if (!material.ls) payload.visible = false;
-
     payload.visible = false;
     TerminateRay(); // actually has no impact
 }
@@ -83,6 +75,6 @@ void ShadowShader::operator() (IPayload& payload_, const IAttribute& attrib_) co
 void Miss::operator() (IPayload& payload_, const IAttribute& attrib_) const
 {
     Payload& payload = dynamic_cast<Payload&>(payload_);
-    payload.radiance = background;
+    payload.radiance += background;
     payload.done = true;
 }

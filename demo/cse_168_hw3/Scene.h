@@ -32,12 +32,17 @@ struct Scene
 
     enum Integrator
     {
-        DIRECT,
-        ANALYTIC_DIRECT,
-    } integrator = DIRECT;
+        DIRECT, // deprecated since hw3
+        PATH_TRACER,
+    } integrator = PATH_TRACER;
 
-    int nLightSamples = 1;
-    bool bLightstratify = 0;
+    int nSampleQuadLight = 1; // number of samples integrating quad light
+    bool bLightstratify = 0; // enable straitfy when integrating quad light
+    bool bDirectAnalytic = 0; // use analytic direct lighting when integrating quad light
+
+    int nSamplePerPixel = 1; // number of samples per pixel
+    bool bUseNEE = 0; // enable Next-Event estimation when path-tracing
+    bool bUseRR = 0; // enable Russian Roulette when path-tracing
 
     void Build();
 };

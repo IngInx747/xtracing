@@ -270,7 +270,7 @@ void SceneLoader::load(const std::string& filename, Scene& scene)
         }
         else if (cmd == "lightsamples" && readValues(s, 1, ivalues))
         {
-            scene.nLightSamples = ivalues[0];
+            scene.nSampleQuadLight = ivalues[0];
         }
         else if (cmd == "lightstratify" && readValues(s, 1, svalues))
         {
@@ -282,7 +282,7 @@ void SceneLoader::load(const std::string& filename, Scene& scene)
     }
 
     printf("Integrator: %d\n", scene.integrator);
-    printf("Number of Light Sample: %d\n", scene.nLightSamples);
+    printf("Number of Light Sample: %d\n", scene.nSampleQuadLight);
     printf("Enable Light Stratify: %d\n", scene.bLightstratify);
 
     in.close();

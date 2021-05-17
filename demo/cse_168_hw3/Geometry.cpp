@@ -35,9 +35,6 @@ bool TriangleCollide::operator() (const IPrimitive& primitive, Ray& ray) const
         vec3 h = org + dir * ray.dist;
         vec3 n = normalize(cross(v1 - v0, v0 - v2));
         if (dot(n, dir) > 0) n = -n;
-        //h = TransformPoint(h, GetWorldTransform());
-        //n = normalize(Object2WorldNonHomoCoord(n, GetWorldTransform()));
-        //dir = normalize(Object2WorldNonHomoCoord(dir, GetWorldTransform()));
         Attribute attribute;
         attribute.hit = h;
         attribute.normal = n;

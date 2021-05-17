@@ -264,13 +264,23 @@ void SceneLoader::load(const std::string& filename, Scene& scene)
         else if (cmd == "integrator" && readValues(s, 1, svalues))
         {
             if (svalues[0] == "analyticdirect")
-                scene.integrator = Scene::Integrator::ANALYTIC_DIRECT;
-            else if (svalues[0] == "direct")
+            {
                 scene.integrator = Scene::Integrator::DIRECT;
+                scene.bDirectAnalytic = true;
+            }
+            else if (svalues[0] == "direct")
+            {
+                scene.integrator = Scene::Integrator::DIRECT;
+                scene.bDirectAnalytic = false;
+            }
+            else if (svalues[0] == "pathtracer")
+            {
+                scene.integrator = Scene::Integrator::PATH_TRACER;
+            }
         }
         else if (cmd == "lightsamples" && readValues(s, 1, ivalues))
         {
-            scene.nLightSamples = ivalues[0];
+            scene.nSampleQuadLight = ivalues[0];
         }
         else if (cmd == "lightstratify" && readValues(s, 1, svalues))
         {
@@ -279,11 +289,33 @@ void SceneLoader::load(const std::string& filename, Scene& scene)
             else
                 scene.bLightstratify = false;
         }
+        else if(cmd == "spp" && readValues(s, 1, ivalues))
+        {
+            scene.nSamplePerPixel = ivalues[0];
+        }
+        else if(cmd == "nexteventestimation" && readValues(s, 1, svalues))
+        {
+            if (svalues[0] == "on")
+                scene.bUseNEE = true;
+            else
+                scene.bUseNEE = false;
+        }
+        else if(cmd == "russianroulette" && readValues(s, 1, svalues))
+        {
+            if (svalues[0] == "on")
+                scene.bUseRR = true;
+            else
+                scene.bUseRR = false;
+        }
     }
 
     printf("Integrator: %d\n", scene.integrator);
-    printf("Number of Light Sample: %d\n", scene.nLightSamples);
-    printf("Enable Light Stratify: %d\n", scene.bLightstratify);
+    printf("Trace depth: %d\n", scene.depth);
+    //printf("Number of Light Sample: %d\n", scene.nSampleQuadLight);
+    //printf("Enable Light Stratify: %d\n", scene.bLightstratify);
+    printf("Sample per pixel: %d\n", scene.nSamplePerPixel);
+    printf("Next-Event estimation: %d\n", scene.bUseNEE);
+    printf("Russian Roulette: %d\n", scene.bUseRR);
 
     in.close();
 }

@@ -44,7 +44,7 @@ void PhongShader::operator() (IPayload& payload_, const IAttribute& attrib_) con
             result += ShadeQuadLightAnalytic(light, attrib, material);
         else if (scene->integrator == Scene::Integrator::DIRECT)
             result += ShadeQuadLightMonteCarlo(light, attrib, material,
-                root, scene->nLightSamples, scene->bLightstratify);
+                root, scene->nSampleQuadLight, scene->bLightstratify);
     }
 
     payload.radiance = result;

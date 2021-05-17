@@ -114,10 +114,8 @@ vec3 ShadeQuadLightMonteCarlo(
         float Rs = dot(xx - x, xx - x); // |x - x'|^2
         float R = std::sqrtf(Rs);
 
-        //float offset_surface = 0.00002f; // 0.00001f;
         float ratio_light_src = 0.999f;
         float offset_ignore_self = 0.0001f;
-        //Ray ray{x + n * offset_surface, wi, R * ratio_light_src, offset_ignore_self};
         Ray ray{x, wi, R * ratio_light_src, offset_ignore_self};
         if (IsRayOccluded(ray, root)) return vec3{};
 

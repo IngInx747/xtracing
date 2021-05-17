@@ -20,13 +20,25 @@ void Scene::Build()
     sphereGeometry->SetCollideProgram<SphereCollide>(sphereCollide);
 
     // setup material programs
-    std::shared_ptr<PhongShader> rayClosestHit = std::make_shared<PhongShader>();
-    rayClosestHit->scene = this;
+    std::shared_ptr<MaterialProgram> materialProgram = std::make_shared<MaterialProgram>();
+
     std::shared_ptr<ShadowShader> shadowAnyHit = std::make_shared<ShadowShader>();
     shadowAnyHit->scene = this;
-    std::shared_ptr<MaterialProgram> materialProgram = std::make_shared<MaterialProgram>();
-    materialProgram->SetClosestHitProgram<PhongShader>(0, rayClosestHit); // 0: common ray
     materialProgram->SetAnyHitProgram<ShadowShader>(1, shadowAnyHit); // 1: shadow ray
+
+    if (integrator == PATH_TRACER)
+    {
+        if (bUseNEE)
+        {}
+        else if (bUseRR)
+        {}
+        else
+        {
+            std::shared_ptr<SimplePathTracer> rayClosestHit = std::make_shared<SimplePathTracer>();
+            rayClosestHit->scene = this;
+            materialProgram->SetClosestHitProgram<SimplePathTracer>(0, rayClosestHit); // 0: common ray
+        }
+    }
 
     // setup context programs
     std::shared_ptr<Miss> bc = std::make_shared<Miss>();
