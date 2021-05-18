@@ -64,6 +64,14 @@ void SimplePathTracer::operator() (IPayload& payload_, const IAttribute& attrib_
 }
 
 
+void NEEPathTracer::operator() (IPayload& payload_, const IAttribute& attrib_) const
+{}
+
+
+void NRPathTracer::operator() (IPayload& payload_, const IAttribute& attrib_) const
+{}
+
+
 void ShadowShader::operator() (IPayload& payload_, const IAttribute& attrib_) const
 {
     ShadowPayload& payload = dynamic_cast<ShadowPayload&>(payload_);

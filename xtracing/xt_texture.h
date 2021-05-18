@@ -35,7 +35,7 @@ struct RepeatWrapper : public ITexWrapper
 {
     inline float operator() (float x) const
     {
-        return x - std::floorf(x); // [0.0, 1.0)
+        return x - floorf(x); // [0.0, 1.0)
     }
 };
 
@@ -44,7 +44,7 @@ struct MirrorRepeatWrapper : public ITexWrapper
 {
     inline float operator() (float x) const
     {
-        return std::fabs(x - std::nearbyint(x * 0.5f) * 2.0f); // distance to the nearest even int
+        return fabs(x - nearbyint(x * 0.5f) * 2.0f); // distance to the nearest even int
     }
 };
 

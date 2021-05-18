@@ -297,11 +297,11 @@ protected:
     size_t mStride;
 
 public:
-    template<class T_Base>
-    friend inline std::ptrdiff_t distance(typename Buffer<T_Base>::iterator first, typename Buffer<T_Base>::iterator last);
+    template<class T_B>
+    friend inline std::ptrdiff_t distance(typename Buffer<T_B>::iterator first, typename Buffer<T_B>::iterator last);
 
-    template<class T_Base>
-    friend inline void advance(typename Buffer<T_Base>::iterator& iter, size_t n);
+    template<class T_B>
+    friend inline void advance(typename Buffer<T_B>::iterator& iter, size_t n);
 };
 
 
@@ -350,10 +350,10 @@ class Prototype : public IPrototype<T_Base>
 public:
     std::shared_ptr<T_Base> Instantialize() const
     {
-        if (!mPrototype) return nullptr;
+        if (!this->mPrototype) return nullptr;
         return std::dynamic_pointer_cast<T_Base>(
             std::make_shared<T_Derived>(
-                *std::dynamic_pointer_cast<T_Derived>(mPrototype)));
+                *std::dynamic_pointer_cast<T_Derived>(this->mPrototype)));
     }
 };
 

@@ -29,9 +29,17 @@ void Scene::Build()
     if (integrator == PATH_TRACER)
     {
         if (bUseNEE)
-        {}
+        {
+            std::shared_ptr<NEEPathTracer> rayClosestHit = std::make_shared<NEEPathTracer>();
+            rayClosestHit->scene = this;
+            materialProgram->SetClosestHitProgram<NEEPathTracer>(0, rayClosestHit); // 0: common ray
+        }
         else if (bUseRR)
-        {}
+        {
+            std::shared_ptr<NRPathTracer> rayClosestHit = std::make_shared<NRPathTracer>();
+            rayClosestHit->scene = this;
+            materialProgram->SetClosestHitProgram<NRPathTracer>(0, rayClosestHit); // 0: common ray
+        }
         else
         {
             std::shared_ptr<SimplePathTracer> rayClosestHit = std::make_shared<SimplePathTracer>();

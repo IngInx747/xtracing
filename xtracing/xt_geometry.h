@@ -184,8 +184,8 @@ inline vec3 GetSphericalCoordinates(const vec3& center, const vec3& ref)
 {
 	vec3 p = ref - center;
     float rho = length(p); // radial distance
-	float phi = std::acosf(p.y / rho); // polar angle
-	float psi = std::atan2f(p.z, p.x); // azimuthal angle
+	float phi = acosf(p.y / rho); // polar angle
+	float psi = atan2f(p.z, p.x); // azimuthal angle
     return vec3{rho, phi, psi};
 }
 
