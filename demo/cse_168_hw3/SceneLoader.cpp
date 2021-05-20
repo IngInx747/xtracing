@@ -303,9 +303,11 @@ void SceneLoader::load(const std::string& filename, Scene& scene)
         else if(cmd == "russianroulette" && readValues(s, 1, svalues))
         {
             if (svalues[0] == "on")
+            {
                 scene.bUseRR = true;
-            else
-                scene.bUseRR = false;
+                scene.depth = INT_MAX;
+            }
+            else scene.bUseRR = false;
         }
     }
 

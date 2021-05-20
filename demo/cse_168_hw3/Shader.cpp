@@ -65,11 +65,96 @@ void SimplePathTracer::operator() (IPayload& payload_, const IAttribute& attrib_
 
 
 void NEEPathTracer::operator() (IPayload& payload_, const IAttribute& attrib_) const
-{}
+{
+    Payload& payload = dynamic_cast<Payload&>(payload_);
+    const Attribute& attrib = dynamic_cast<const Attribute&>(attrib_);
+    const Material& material = scene->materials[attrib.mid];
+    SceneNode* root = scene->root.get();
+    const auto& qlights = scene->qlights;
+    vec3 result{};
+
+    const vec3& Kd = material.Kd;
+    const vec3& Ks = material.Ks;
+    const vec3& Ke = material.Ke;
+    float s = material.ex;
+
+    if (material.ls)
+    {
+        if (payload.depth == 0)
+            payload.radiance += Ke;
+        payload.done = true;
+        return;
+    }
+    
+    for (const auto& light : qlights)
+        result += ShadeQuadLightMonteCarlo(light, attrib, material,
+            root, scene->nSampleQuadLight, scene->bLightstratify);
+
+    const vec3& n = attrib.normal;
+    const vec3& wo = attrib.incident;
+    vec3 r = reflect(wo, n);
+    vec3 wi = SampleHemisphere(n);
+
+    vec3 f = (Kd + Ks * (s + 2.f) * 0.5f * std::powf(std::max(dot(r, wi), 0.f), s)) * k1_Pi;
+    
+    payload.radiance += result * payload.weight;
+    payload.weight *= f * dot(n, wi) * 2.f * kPi; // brdf * (n, wi) * 2Pi
+    payload.origin = attrib.hit;
+    payload.direction = wi;
+    ++payload.depth;
+}
 
 
 void NRPathTracer::operator() (IPayload& payload_, const IAttribute& attrib_) const
-{}
+{
+    Payload& payload = dynamic_cast<Payload&>(payload_);
+    const Attribute& attrib = dynamic_cast<const Attribute&>(attrib_);
+    const Material& material = scene->materials[attrib.mid];
+    SceneNode* root = scene->root.get();
+    const auto& qlights = scene->qlights;
+    vec3 result{};
+
+    const vec3& Kd = material.Kd;
+    const vec3& Ks = material.Ks;
+    const vec3& Ke = material.Ke;
+    float s = material.ex;
+
+    if (material.ls)
+    {
+        if (payload.depth == 0)
+            payload.radiance += Ke;
+        payload.done = true;
+        return;
+    }
+    
+    for (const auto& light : qlights)
+        result += ShadeQuadLightMonteCarlo(light, attrib, material,
+            root, scene->nSampleQuadLight, scene->bLightstratify);
+
+    float p = std::max(std::max(payload.weight.r, payload.weight.g), payload.weight.b);
+    float q = 1.0f - std::min(p, 1.0f);
+
+    if (q < GetRandom())
+    {
+        payload.done = true;
+        return;
+    }
+
+    payload.weight /= (1 - q); // re-weight path contribution   
+
+    const vec3& n = attrib.normal;
+    const vec3& wo = attrib.incident;
+    vec3 r = reflect(wo, n);
+    vec3 wi = SampleHemisphere(n);
+
+    vec3 f = (Kd + Ks * (s + 2.f) * 0.5f * std::powf(std::max(dot(r, wi), 0.f), s)) * k1_Pi;
+    
+    payload.radiance += result * payload.weight;
+    payload.weight *= f * dot(n, wi) * 2.f * kPi; // brdf * (n, wi) * 2Pi
+    payload.origin = attrib.hit;
+    payload.direction = wi;
+    payload.depth = 1; // depth = infinity
+}
 
 
 void ShadowShader::operator() (IPayload& payload_, const IAttribute& attrib_) const
