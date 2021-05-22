@@ -26,27 +26,9 @@ void Scene::Build()
     shadowAnyHit->scene = this;
     materialProgram->SetAnyHitProgram<ShadowShader>(1, shadowAnyHit); // 1: shadow ray
 
-    if (integrator == PATH_TRACER)
-    {
-        if (bUseRR)
-        {
-            std::shared_ptr<NRPathTracer> rayClosestHit = std::make_shared<NRPathTracer>();
-            rayClosestHit->scene = this;
-            materialProgram->SetClosestHitProgram<NRPathTracer>(0, rayClosestHit); // 0: common ray
-        }
-        else if (bUseNEE)
-        {
-            std::shared_ptr<NEEPathTracer> rayClosestHit = std::make_shared<NEEPathTracer>();
-            rayClosestHit->scene = this;
-            materialProgram->SetClosestHitProgram<NEEPathTracer>(0, rayClosestHit); // 0: common ray
-        }
-        else
-        {
-            std::shared_ptr<SimplePathTracer> rayClosestHit = std::make_shared<SimplePathTracer>();
-            rayClosestHit->scene = this;
-            materialProgram->SetClosestHitProgram<SimplePathTracer>(0, rayClosestHit); // 0: common ray
-        }
-    }
+    std::shared_ptr<PathTracer> rayClosestHit = std::make_shared<PathTracer>();
+    rayClosestHit->scene = this;
+    materialProgram->SetClosestHitProgram<PathTracer>(0, rayClosestHit); // 0: common ray
 
     // setup context programs
     std::shared_ptr<Miss> bc = std::make_shared<Miss>();

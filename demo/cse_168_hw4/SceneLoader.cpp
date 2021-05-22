@@ -57,10 +57,10 @@ void SceneLoader::load(const std::string& filename, Scene& scene)
     material.Ks = { 0, 0, 0 };
     material.Ke = { 0, 0, 0 };
     material.ex = 0;
+    material.brdf = BRDF::PHONG;
 
     Material lightMaterial;
     lightMaterial.Ke = { 1, 1, 1 };
-    lightMaterial.ls = true;
 
     // static var: directional light
     float c0 = 1, c1 = 0, c2 = 0;
@@ -246,6 +246,7 @@ void SceneLoader::load(const std::string& filename, Scene& scene)
             light.ac = ac;
             light.color = color;
             lightMaterial.Ke = color;
+            lightMaterial.ls = static_cast<int>(scene.qlights.size());
             scene.qlights.push_back(light);
 
             Triangle tri1;
@@ -266,17 +267,7 @@ void SceneLoader::load(const std::string& filename, Scene& scene)
         }
         else if (cmd == "integrator" && readValues(s, 1, svalues))
         {
-            if (svalues[0] == "analyticdirect")
-            {
-                scene.integrator = Scene::Integrator::DIRECT;
-                scene.bDirectAnalytic = true;
-            }
-            else if (svalues[0] == "direct")
-            {
-                scene.integrator = Scene::Integrator::DIRECT;
-                scene.bDirectAnalytic = false;
-            }
-            else if (svalues[0] == "pathtracer")
+            if (svalues[0] == "pathtracer")
             {
                 scene.integrator = Scene::Integrator::PATH_TRACER;
             }
@@ -300,7 +291,7 @@ void SceneLoader::load(const std::string& filename, Scene& scene)
         {
             if (svalues[0] == "on")
                 scene.bUseNEE = true;
-            else
+            else if (svalues[0] == "off")
                 scene.bUseNEE = false;
         }
         else if(cmd == "russianroulette" && readValues(s, 1, svalues))
@@ -312,6 +303,40 @@ void SceneLoader::load(const std::string& filename, Scene& scene)
             }
             else scene.bUseRR = false;
         }
+        else if(cmd == "importancesampling" && readValues(s, 1, svalues))
+        {
+            if (svalues[0] == "brdf")
+            {
+                scene.importanceSampling = Scene::ImportanceSampling::BRDF;
+            }
+            else if (svalues[0] == "cosine")
+            {
+                scene.importanceSampling = Scene::ImportanceSampling::COSINE;
+            }
+            else if (svalues[0] == "hemisphere")
+            {
+                scene.importanceSampling = Scene::ImportanceSampling::HEMISPHERE;
+            }
+        }
+        else if(cmd == "brdf" && readValues(s, 1, svalues))
+        {
+            if (svalues[0] == "phong")
+            {
+                material.brdf = BRDF::PHONG;
+            }
+            else if (svalues[0] == "ggx")
+            {
+                material.brdf = BRDF::GGX;
+            }
+        }
+        else if (cmd == "roughness" && readValues(s, 1, fvalues))
+        {
+            material.rg = fvalues[0];
+        }
+        else if (cmd == "gamma" && readValues(s, 1, fvalues))
+        {
+            scene.gamma = fvalues[0];
+        }
     }
 
     printf("Integrator: %d\n", scene.integrator);
@@ -321,6 +346,8 @@ void SceneLoader::load(const std::string& filename, Scene& scene)
     printf("Sample per pixel: %d\n", scene.nSamplePerPixel);
     printf("Next-Event estimation: %d\n", scene.bUseNEE);
     printf("Russian Roulette: %d\n", scene.bUseRR);
+    printf("Importance Sampling: %d\n", scene.importanceSampling);
+    printf("Gamma: %f\n", scene.gamma);
 
     in.close();
 }

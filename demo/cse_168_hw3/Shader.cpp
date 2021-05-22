@@ -89,15 +89,15 @@ void NEEPathTracer::operator() (IPayload& payload_, const IAttribute& attrib_) c
     for (const auto& light : qlights)
         result += ShadeQuadLightMonteCarlo(light, attrib, material,
             root, scene->nSampleQuadLight, scene->bLightstratify);
+            
+    payload.radiance += result * payload.weight;
 
     const vec3& n = attrib.normal;
     const vec3& wo = attrib.incident;
     vec3 r = reflect(wo, n);
     vec3 wi = SampleHemisphere(n);
-
     vec3 f = (Kd + Ks * (s + 2.f) * 0.5f * std::powf(std::max(dot(r, wi), 0.f), s)) * k1_Pi;
     
-    payload.radiance += result * payload.weight;
     payload.weight *= f * dot(n, wi) * 2.f * kPi; // brdf * (n, wi) * 2Pi
     payload.origin = attrib.hit;
     payload.direction = wi;
@@ -131,10 +131,12 @@ void NRPathTracer::operator() (IPayload& payload_, const IAttribute& attrib_) co
         result += ShadeQuadLightMonteCarlo(light, attrib, material,
             root, scene->nSampleQuadLight, scene->bLightstratify);
 
+    payload.radiance += result * payload.weight;
+
     float p = std::max(std::max(payload.weight.r, payload.weight.g), payload.weight.b);
     float q = 1.0f - std::min(p, 1.0f);
 
-    if (q < GetRandom())
+    if (GetRandom() < q)
     {
         payload.done = true;
         return;
@@ -146,10 +148,8 @@ void NRPathTracer::operator() (IPayload& payload_, const IAttribute& attrib_) co
     const vec3& wo = attrib.incident;
     vec3 r = reflect(wo, n);
     vec3 wi = SampleHemisphere(n);
-
     vec3 f = (Kd + Ks * (s + 2.f) * 0.5f * std::powf(std::max(dot(r, wi), 0.f), s)) * k1_Pi;
     
-    payload.radiance += result * payload.weight;
     payload.weight *= f * dot(n, wi) * 2.f * kPi; // brdf * (n, wi) * 2Pi
     payload.origin = attrib.hit;
     payload.direction = wi;
