@@ -33,6 +33,9 @@ struct QuadLight
 };
 
 
+bool IsRayOccluded(Ray& ray, SceneNode* root);
+
+
 vec3 ShadeDirectionalLight(
     const DirectionalLight& light,
     const Attribute& attrib,
@@ -60,6 +63,7 @@ vec3 ShadeQuadLightMonteCarlo(
     SceneNode* root,
     int numSample,
     bool stratified,
-    int brdf);
+    int brdf,
+    float* pdf);
 
 #endif

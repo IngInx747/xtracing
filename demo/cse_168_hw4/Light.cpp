@@ -100,7 +100,8 @@ vec3 ShadeQuadLightMonteCarlo(
     SceneNode* root,
     int numSample,
     bool stratified,
-    int brdf)
+    int brdf,
+    float* pdf)
 {
     vec3 x = attrib.hit;
     vec3 n = attrib.normal;
@@ -109,6 +110,7 @@ vec3 ShadeQuadLightMonteCarlo(
 
     vec3 A = cross(light.ab, light.ac);
     vec3 nl = normalize(A);
+    float area = length(A);
 
     vec3 Kd = material.Kd;
     vec3 Ks = material.Ks;
@@ -133,6 +135,8 @@ vec3 ShadeQuadLightMonteCarlo(
         vec3 F = (Kd + Ks * (s + 2.f) * 0.5f * powf(max(dot(r, wi), 0.f), s)) * k1_Pi;
         float G = dot(wi, n) * dot(wi, nl) / Rs;
 
+        if (pdf) *pdf += Rs / max(area * fabs(dot(nl, wi)), kEpsilon);
+
         return F * G;
     };
 
@@ -155,6 +159,8 @@ vec3 ShadeQuadLightMonteCarlo(
 
         vec3 F = Kd * k1_Pi + ff * fg * fd / (4.f * dot(wi, n) * dot(-wo, n));
         float G = dot(wi, n) * dot(wi, nl) / Rs;
+
+        if (pdf) *pdf += Rs / max(area * fabs(dot(nl, wi)), kEpsilon);
 
         return F * G;
     };

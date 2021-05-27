@@ -53,6 +53,8 @@ struct Scene
 
     float gamma = 1.f;
 
+    bool bUseMIS = 0;
+
     void Build();
 };
 

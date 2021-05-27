@@ -290,9 +290,18 @@ void SceneLoader::load(const std::string& filename, Scene& scene)
         else if(cmd == "nexteventestimation" && readValues(s, 1, svalues))
         {
             if (svalues[0] == "on")
+            {
                 scene.bUseNEE = true;
+            }
             else if (svalues[0] == "off")
+            {
                 scene.bUseNEE = false;
+            }
+            else if (svalues[0] == "mis")
+            {
+                scene.bUseNEE = true;
+                scene.bUseMIS = true; //
+            }
         }
         else if(cmd == "russianroulette" && readValues(s, 1, svalues))
         {
@@ -301,7 +310,10 @@ void SceneLoader::load(const std::string& filename, Scene& scene)
                 scene.bUseRR = true;
                 scene.depth = INT_MAX;
             }
-            else scene.bUseRR = false;
+            else if (svalues[0] == "off")
+            {
+                scene.bUseRR = false;
+            }
         }
         else if(cmd == "importancesampling" && readValues(s, 1, svalues))
         {

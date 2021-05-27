@@ -26,9 +26,22 @@ void Scene::Build()
     shadowAnyHit->scene = this;
     materialProgram->SetAnyHitProgram<ShadowShader>(1, shadowAnyHit); // 1: shadow ray
 
-    std::shared_ptr<PathTracer> rayClosestHit = std::make_shared<PathTracer>();
-    rayClosestHit->scene = this;
-    materialProgram->SetClosestHitProgram<PathTracer>(0, rayClosestHit); // 0: common ray
+    if (bUseMIS)
+    {
+        std::shared_ptr<MISTracer> chs0 = std::make_shared<MISTracer>();
+        chs0->scene = this;
+        materialProgram->SetClosestHitProgram<MISTracer>(0, chs0); // 0: common ray
+        
+        std::shared_ptr<OneStepShader> chs2 = std::make_shared<OneStepShader>();
+        chs2->scene = this;
+        materialProgram->SetClosestHitProgram<OneStepShader>(2, chs2); // 2: sample ray
+    }
+    else
+    {
+        std::shared_ptr<PathTracer> rayClosestHit = std::make_shared<PathTracer>();
+        rayClosestHit->scene = this;
+        materialProgram->SetClosestHitProgram<PathTracer>(0, rayClosestHit); // 0: common ray
+    }
 
     // setup context programs
     std::shared_ptr<Miss> bc = std::make_shared<Miss>();

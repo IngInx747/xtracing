@@ -25,7 +25,7 @@ vec3 Renderer::RenderPixel(const int2& index, const int2& dim, const Scene& scen
         payload.done = false;
         payload.depth = 0;
         payload.weight = vec3{1, 1, 1};
-        payload.seed = tid;
+        //payload.seed = tid;
 
         // ray 0
         vec2 p = vec2{index.x, index.y};

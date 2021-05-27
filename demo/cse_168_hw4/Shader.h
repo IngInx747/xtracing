@@ -21,9 +21,9 @@ struct Payload : public IPayload
     vec3 weight;
     vec3 origin;
     vec3 direction;
-    int  depth;
+    int depth;
+    int light;
     bool done;
-    long long seed;
 };
 
 
@@ -47,6 +47,22 @@ struct Material
 
 
 struct PathTracer : public IShader
+{
+    void operator() (IPayload& payload_, const IAttribute& attrib_) const;
+
+    Scene* scene;
+};
+
+
+struct MISTracer : public IShader
+{
+    void operator() (IPayload& payload_, const IAttribute& attrib_) const;
+
+    Scene* scene;
+};
+
+
+struct OneStepShader : public IShader
 {
     void operator() (IPayload& payload_, const IAttribute& attrib_) const;
 
