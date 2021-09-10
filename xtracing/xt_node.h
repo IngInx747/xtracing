@@ -833,7 +833,7 @@ public:
     {
         if (!mAccel)
         {
-            if (mBuffer.size() >= 50) // !?
+            if (mBuffer.size() >= 8) // !?
             {
                 mAccel = std::make_shared<PrimitiveAccelBvh>(GetGlobalBvhOption());
             }

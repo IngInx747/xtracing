@@ -81,8 +81,8 @@ public:
     template <class PrimitiveBound, class PrimitiveSplit>
     void Build(
         const std::vector<Primitive>& primitives,
-        PrimitiveBound& bound,
-        PrimitiveSplit& split,
+        const PrimitiveBound& bound,
+        const PrimitiveSplit& split,
         int threshold = 1);
 
     inline std::vector<BvhNode>& GetNodes() { return mNodes; }
@@ -101,8 +101,8 @@ protected:
         int endId,
         int nodeId,
         int depth,
-        PrimitiveBound& bound,
-        PrimitiveSplit& split,
+        const PrimitiveBound& bound,
+        const PrimitiveSplit& split,
         int threshold);
 
 protected:
@@ -143,8 +143,8 @@ template <class Primitive>
 template <class PrimitiveBound, class PrimitiveSplit>
 inline void Bvh<Primitive>::Build(
     const std::vector<Primitive>& primitives,
-    PrimitiveBound& bound,
-    PrimitiveSplit& split,
+    const PrimitiveBound& bound,
+    const PrimitiveSplit& split,
     int threshold)
 {
     if (primitives.size() == 0) return;
@@ -154,6 +154,7 @@ inline void Bvh<Primitive>::Build(
     BuildRecursive(0, static_cast<int>(mPrimitives.size()), 0, 0, bound, split, threshold);
 }
 
+
 template <class Primitive>
 template <class PrimitiveBound, class PrimitiveSplit>
 inline void Bvh<Primitive>::BuildRecursive(
@@ -161,55 +162,51 @@ inline void Bvh<Primitive>::BuildRecursive(
     int endId,
     int nodeId,
     int depth,
-    PrimitiveBound& bound,
-    PrimitiveSplit& split,
+    const PrimitiveBound& bound,
+    const PrimitiveSplit& split,
     int threshold)
 {
     using namespace bounding_volume_hierarchy_node;
 
-    if ((endId - beginId) <= threshold)
-    {
+	// Split primitives into left and right children nodes at splitting index
+	int splitId = -1;
+	if ((endId - beginId) > threshold)
+		splitId = split(mPrimitives, beginId, endId);
+
+	// Make Bvh leaf node if:
+	// 1. #primitive is less than threshold, there is no need to split anymore;
+	// 2. split method failed to split primitives into 2 sets(which causes #primitive > threshold).
+    // To make #primitive per node strictly less than threshold, one needs a split method that
+    // will certainly split successfully, like EqualCount method.
+	if (splitId == -1 || splitId == beginId || splitId == endId)
+	{
         SetLeaf(mNodes[nodeId], beginId, endId - beginId);
         Aabb bbox = Bound();
         for (int i = beginId; i < endId; ++i)
             bbox = Union(bbox, bound(mPrimitives[i]));
         mNodes[nodeId].bbox = bbox;
-    }
-    else
-    {
-        // Split primitives into left and right children nodes at splitting index
-        int splitId = split(mPrimitives, beginId, endId);
+	}
+    // Build Bvh recursively after splitting primitives
+	else
+	{
+        mNodes[nodeId].bbox = Bound();
 
-        // Make leaf node if it failed to split primitives into 2 sets
-        if (splitId == beginId || splitId == endId)
-        {
-            SetLeaf(mNodes[nodeId], beginId, endId - beginId);
-            Aabb bbox = Bound();
-            for (int i = beginId; i < endId; ++i)
-                bbox = Union(bbox, bound(mPrimitives[i]));
-            mNodes[nodeId].bbox = bbox;
-        }
-        // Build Bvh recursively after splitting primitives
-        else
-        {
-            mNodes[nodeId].bbox = Bound();
+        int left = static_cast<int>(mNodes.size());
+        Left(mNodes[nodeId]) = left;
+        mNodes.emplace_back();
 
-            int left = static_cast<int>(mNodes.size());
-            Left(mNodes[nodeId]) = left;
-            mNodes.emplace_back();
+        BuildRecursive(beginId, splitId, left, depth + 1, bound, split, threshold);
+        mNodes[nodeId].bbox = Union(mNodes[nodeId].bbox, mNodes[left].bbox);
 
-            BuildRecursive(beginId, splitId, left, depth + 1, bound, split, threshold);
-            mNodes[nodeId].bbox = Union(mNodes[nodeId].bbox, mNodes[left].bbox);
+        int right = static_cast<int>(mNodes.size());
+        Right(mNodes[nodeId]) = right;
+        mNodes.emplace_back();
 
-            int right = static_cast<int>(mNodes.size());
-            Right(mNodes[nodeId]) = right;
-            mNodes.emplace_back();
-
-            BuildRecursive(splitId, endId, right, depth + 1, bound, split, threshold);
-            mNodes[nodeId].bbox = Union(mNodes[nodeId].bbox, mNodes[right].bbox);
-        }
-    }
+        BuildRecursive(splitId, endId, right, depth + 1, bound, split, threshold);
+        mNodes[nodeId].bbox = Union(mNodes[nodeId].bbox, mNodes[right].bbox);
+	}
 }
+
 
 template <class Primitive>
 template <class PrimitiveCollide>
@@ -301,25 +298,25 @@ enum BvhSplitMethodEnum
 template<class Primitive, class PrimitiveBound>
 struct EqualCountsSplit
 {
-    int operator() (std::vector<Primitive>& primitives, int beginId, int endId);
+    int operator() (std::vector<Primitive>& primitives, int beginId, int endId) const;
 
-    EqualCountsSplit(PrimitiveBound& bound) : bound(bound) {}
+    EqualCountsSplit(const PrimitiveBound& bound) : bound(bound) {}
 
-    PrimitiveBound& bound;
+    const PrimitiveBound& bound;
 };
 
 
 template<class Primitive, class PrimitiveBound>
-inline int EqualCountsSplit<Primitive, PrimitiveBound>::operator() (std::vector<Primitive>& primitives, int beginId, int endId)
+inline int EqualCountsSplit<Primitive, PrimitiveBound>::operator() (std::vector<Primitive>& primitives, int beginId, int endId) const
 {
     auto beginIter = primitives.begin() + beginId;
     auto endIter = primitives.begin() + endId;
-    Aabb cbox = Bound(); // centroid bounding box
 
+    Aabb cbox = Bound(); // centroid bounding box
     for (auto iter = beginIter; iter != endIter; ++iter)
         cbox = Union(cbox, bound(*iter));
-
     int dim = GetMaxExtentDim(cbox);
+
     int mid = (beginId + endId) / 2;
     auto midIter = primitives.begin() + mid;
 
@@ -335,36 +332,139 @@ inline int EqualCountsSplit<Primitive, PrimitiveBound>::operator() (std::vector<
 template<class Primitive, class PrimitiveBound>
 struct MiddlePointSplit
 {
-    int operator() (std::vector<Primitive>& primitives, int beginId, int endId);
+    int operator() (std::vector<Primitive>& primitives, int beginId, int endId) const;
 
-    MiddlePointSplit(PrimitiveBound& bound) : bound(bound) {}
+    MiddlePointSplit(const PrimitiveBound& bound) : bound(bound) {}
 
-    PrimitiveBound& bound;
+    const PrimitiveBound& bound;
 };
 
 
 template<class Primitive, class PrimitiveBound>
-inline int MiddlePointSplit<Primitive, PrimitiveBound>::operator() (std::vector<Primitive>& primitives, int beginId, int endId)
+inline int MiddlePointSplit<Primitive, PrimitiveBound>::operator() (std::vector<Primitive>& primitives, int beginId, int endId) const
 {
     auto beginIter = primitives.begin() + beginId;
     auto endIter = primitives.begin() + endId;
-    Aabb cbox = Bound(); // centroid bounding box
 
+    Aabb cbox = Bound(); // centroid bounding box
     for (auto iter = beginIter; iter != endIter; ++iter)
         cbox = Union(cbox, bound(*iter));
-
     int dim = GetMaxExtentDim(cbox);
+
     float mid = (cbox.pMin[dim] + cbox.pMax[dim]) * 0.5f;
 
-    auto pIter = std::partition(beginIter, endIter,
-        [&](const Primitive& p) { return GetCentroid(bound(p))[dim] < mid; });
+    auto pIter = std::partition(beginIter, endIter, [&](const Primitive& p)
+    { return GetCentroid(bound(p))[dim] < mid; });
+
+    // use EqualCount if split failed
+    if (pIter == beginIter || pIter == endIter)
+	{
+		int mid = (beginId + endId) / 2;
+		auto midIter = primitives.begin() + mid;
+	
+		std::nth_element(beginIter, midIter, endIter,
+			[&](const Primitive& a, const Primitive& b)
+			{ return GetCentroid(bound(a))[dim] < GetCentroid(bound(b))[dim]; });
+	
+		return mid;
+	}
 
     return static_cast<int>(std::distance(primitives.begin(), pIter));
 }
 
 /// Split Method: SAH
 /// Partition primitives via surface area heuristic
-// [TODO]
+template<class Primitive, class PrimitiveBound>
+struct SAHSplit
+{
+    int operator() (std::vector<Primitive>& primitives, int beginId, int endId) const;
+
+    SAHSplit(const PrimitiveBound& bound) : bound(bound) {}
+
+    const PrimitiveBound& bound;
+    int nBuckets{ 16 };
+};
+
+
+template<class Primitive, class PrimitiveBound>
+int SAHSplit<Primitive, PrimitiveBound>::operator() (std::vector<Primitive>& primitives, int beginId, int endId) const
+{
+	auto beginIter = primitives.begin() + beginId;
+	auto endIter = primitives.begin() + endId;
+
+	Aabb cbox = Bound(); // centroid bounding box
+	for (auto iter = beginIter; iter != endIter; ++iter)
+		cbox = Union(cbox, bound(*iter));
+	int dim = GetMaxExtentDim(cbox);
+
+    std::vector<Aabb> boxes(nBuckets, Bound());
+    std::vector<int> counts(nBuckets, 0);
+    
+	for (auto iter = beginIter; iter != endIter; ++iter)
+	{
+		vec3 offset = (GetCentroid(bound(*iter)) - cbox.pMin) / GetDiagonal(cbox);
+		int b = static_cast<int>(nBuckets * offset[dim]);
+		if (b == nBuckets) b = nBuckets - 1;
+		boxes[b] = Union(boxes[b], bound(*iter));
+		++counts[b];
+	}
+
+	// cost of splitting [0,b] and [b+1, nB-1]
+	float minCost = kInfP;
+	int splitBucketId = 0;
+
+	for (int b = 0; b < nBuckets - 1; ++b)
+	{
+		Aabb bbox0 = Bound(), bbox1 = Bound();
+		int count0{}, count1{};
+
+		for (int i = 0; i <= b; ++i)
+		{
+			bbox0 = Union(bbox0, boxes[i]);
+			count0 += counts[i];
+		}
+
+		for (int i = b + 1; i < nBuckets; ++i)
+		{
+			bbox1 = Union(bbox1, boxes[i]);
+			count1 += counts[i];
+		}
+
+		//float cost = 0.125f + (GetArea(bbox0) * count0 + GetArea(bbox1) * count1) / GetArea(cbox);
+		float cost = GetArea(bbox0) * count0 + GetArea(bbox1) * count1;
+
+		// find bucket id that minimizes SAH metric
+		if (minCost > cost)
+		{
+			minCost = cost;
+			splitBucketId = b;
+		}
+	}
+
+	// split according to the SAH result
+	auto pIter = std::partition(beginIter, endIter, [&](const Primitive& p)
+	{
+		vec3 offset = (GetCentroid(bound(p)) - cbox.pMin) / GetDiagonal(cbox);
+		int b = static_cast<int>(nBuckets * offset[dim]);
+		if (b == nBuckets) b = nBuckets - 1;
+		return b <= splitBucketId;
+	});
+
+    // use EqualCount if split failed
+	if (pIter == beginIter || pIter == endIter)
+	{
+		int mid = (beginId + endId) / 2;
+		auto midIter = primitives.begin() + mid;
+	
+		std::nth_element(beginIter, midIter, endIter,
+			[&](const Primitive& a, const Primitive& b)
+			{ return GetCentroid(bound(a))[dim] < GetCentroid(bound(b))[dim]; });
+	
+		return mid;
+	}
+
+	return static_cast<int>(std::distance(primitives.begin(), pIter));
+}
 
 ////////////////////////////////////////////////////////////////
 /// Bvh Build Options
@@ -373,7 +473,7 @@ inline int MiddlePointSplit<Primitive, PrimitiveBound>::operator() (std::vector<
 struct BvhBuildOption
 {
     // the split method used during building process
-    int splitMethod = BvhSplitMethodEnum::EQUAL_COUNT;
+    int splitMethod = BvhSplitMethodEnum::SAH;
 
     // stop splitting if number of primitives each node is less than which
     int threshold = 1;
@@ -394,7 +494,17 @@ void BuildBvh(
         MiddlePointSplit<Primitive, PrimitiveBound> split(bound);
         bvh.Build<PrimitiveBound, decltype(split)>(primitives, bound, split, threshold);
     }
-    else // default: EqualCountsSplit
+    else if (option.splitMethod == BvhSplitMethodEnum::SAH)
+    {
+        SAHSplit<Primitive, PrimitiveBound> split(bound);
+        bvh.Build<PrimitiveBound, decltype(split)>(primitives, bound, split, threshold);
+    }
+    else if (option.splitMethod == BvhSplitMethodEnum::EQUAL_COUNT)
+    {
+        EqualCountsSplit<Primitive, PrimitiveBound> split(bound);
+        bvh.Build<PrimitiveBound, decltype(split)>(primitives, bound, split, threshold);
+    }
+    else
     {
         EqualCountsSplit<Primitive, PrimitiveBound> split(bound);
         bvh.Build<PrimitiveBound, decltype(split)>(primitives, bound, split, threshold);
