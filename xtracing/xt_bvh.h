@@ -177,7 +177,7 @@ inline void Bvh<Primitive>::BuildRecursive(
 	// 1. #primitive is less than threshold, there is no need to split anymore;
 	// 2. split method failed to split primitives into 2 sets(which causes #primitive > threshold).
     // To make #primitive per node strictly less than threshold, one needs a split method that
-    // will certainly split successfully, like EqualCount method.
+    // will certainly perform a successful split, like EqualCount method.
 	if (splitId == -1 || splitId == beginId || splitId == endId)
 	{
         SetLeaf(mNodes[nodeId], beginId, endId - beginId);
@@ -484,7 +484,7 @@ template<class Primitive, class PrimitiveBound>
 void BuildBvh(
     Bvh<Primitive>& bvh,
     const std::vector<Primitive>& primitives,
-    PrimitiveBound& bound,
+    const PrimitiveBound& bound,
     const BvhBuildOption& option)
 {
     int threshold = option.threshold;
