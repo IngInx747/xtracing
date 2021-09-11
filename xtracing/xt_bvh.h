@@ -320,8 +320,7 @@ inline int EqualCountsSplit<Primitive, PrimitiveBound>::operator() (std::vector<
     int mid = (beginId + endId) / 2;
     auto midIter = primitives.begin() + mid;
 
-    std::nth_element(beginIter, midIter, endIter,
-        [&](const Primitive& a, const Primitive& b)
+    std::nth_element(beginIter, midIter, endIter, [&](const Primitive& a, const Primitive& b)
     { return GetCentroid(bound(a))[dim] < GetCentroid(bound(b))[dim]; });
 
     return mid;
@@ -362,9 +361,8 @@ inline int MiddlePointSplit<Primitive, PrimitiveBound>::operator() (std::vector<
 		int mid = (beginId + endId) / 2;
 		auto midIter = primitives.begin() + mid;
 	
-		std::nth_element(beginIter, midIter, endIter,
-			[&](const Primitive& a, const Primitive& b)
-			{ return GetCentroid(bound(a))[dim] < GetCentroid(bound(b))[dim]; });
+		std::nth_element(beginIter, midIter, endIter, [&](const Primitive& a, const Primitive& b)
+		{ return GetCentroid(bound(a))[dim] < GetCentroid(bound(b))[dim]; });
 	
 		return mid;
 	}
@@ -456,9 +454,8 @@ int SAHSplit<Primitive, PrimitiveBound>::operator() (std::vector<Primitive>& pri
 		int mid = (beginId + endId) / 2;
 		auto midIter = primitives.begin() + mid;
 	
-		std::nth_element(beginIter, midIter, endIter,
-			[&](const Primitive& a, const Primitive& b)
-			{ return GetCentroid(bound(a))[dim] < GetCentroid(bound(b))[dim]; });
+		std::nth_element(beginIter, midIter, endIter, [&](const Primitive& a, const Primitive& b)
+		{ return GetCentroid(bound(a))[dim] < GetCentroid(bound(b))[dim]; });
 	
 		return mid;
 	}
