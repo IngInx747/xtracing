@@ -2,7 +2,7 @@
 
 An experimental ray-tracing-based renderer framework
 
-## Effect
+## Demo
 
 ![BVH](demo/demo_instantializer/demo-instantializer-dragon.png?raw=true "BVH")
 
